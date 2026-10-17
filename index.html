@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b6e5b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="College Trader">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<title>The College Trader</title>
+<style>
+/* Layout: one narrow column, built for a phone. Balance and progress first, equity curve, quick entry, then the trade list. */
+:root {
+  --bg: #f1f4f2;
+  --surface: #ffffff;
+  --ink: #14211c;
+  --ink-2: #53635c;
+  --line: #d9e1dc;
+  --accent: #0b6e5b;
+  --accent-soft: #dcefe9;
+  --profit: #1b8a3c;
+  --loss: #c5372c;
+  --on-fill: #ffffff;
+  --grid: #e3e9e5;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1412;
+    --surface: #161f1b;
+    --ink: #e5eee9;
+    --ink-2: #9db0a7;
+    --line: #26332d;
+    --accent: #4cc9a8;
+    --accent-soft: #1b2e28;
+    --profit: #52cc7c;
+    --loss: #f27a72;
+    --on-fill: #0e1412;
+    --grid: #202c26;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1412;
+  --surface: #161f1b;
+  --ink: #e5eee9;
+  --ink-2: #9db0a7;
+  --line: #26332d;
+  --accent: #4cc9a8;
+  --accent-soft: #1b2e28;
+  --profit: #52cc7c;
+  --loss: #f27a72;
+  --on-fill: #0e1412;
+  --grid: #202c26;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.hero { display: flex; flex-direction: column; gap: 12px; }
+.bal { font-family: var(--font-num); font-size: 38px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; }
+.bar { height: 8px; background: var(--accent-soft); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; width: 0; transition: width 0.4s ease; }
+.row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.stat .v { font-family: var(--font-num); font-size: 20px; font-weight: 500; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.pos { color: var(--profit); }
+.neg { color: var(--loss); }
+.chart { margin-top: 8px; }
+.chart svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend b { width: 12px; height: 0; border-top: 2px solid var(--accent); display: inline-block; }
+.legend b.dash { border-top-style: dashed; }
+.legend b.mute { border-color: var(--ink-2); }
+.form { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+textarea { resize: vertical; line-height: 1.4; }
+.b-accent { background: var(--accent); color: var(--on-fill); }
+.nlist { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.nlist li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.ntext { overflow-wrap: anywhere; font-size: 14px; white-space: pre-wrap; }
+.nolder { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ncount { font-family: var(--font-num); font-size: 12px; color: var(--ink-2); }
+.nhead { display: flex; justify-content: space-between; align-items: baseline; }
+.confirm { margin-top: 10px; }
+input[type="number"], input[type="text"], textarea {
+  width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px;
+}
+input::placeholder { color: var(--ink-2); opacity: 0.8; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; border: 1px solid transparent; padding: 8px 14px; font-weight: 600; }
+.b-profit { background: var(--profit); color: var(--on-fill); }
+.b-loss { background: var(--loss); color: var(--on-fill); }
+.b-ghost { background: transparent; color: var(--ink-2); border-color: var(--line); font-weight: 500; min-height: 36px; padding: 4px 10px; font-size: 13px; }
+.err { color: var(--loss); font-size: 13px; min-height: 18px; margin: 0; }
+.note-banner { background: var(--accent-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+.list { list-style: none; margin: 8px 0 0; padding: 0; }
+.list li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.list li:first-child { border-top: 0; }
+.list.days li { grid-template-columns: minmax(0, 1fr) auto; }
+.dlabel { font-weight: 600; font-size: 14px; }
+.today { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-left: 6px; }
+.tno { font-family: var(--font-num); font-size: 12px; color: var(--ink-2); }
+.tmain { min-width: 0; }
+.tnote { overflow-wrap: anywhere; font-size: 14px; }
+.tmeta { font-size: 12px; color: var(--ink-2); }
+.tpl { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; }
+.del { min-height: 32px; padding: 2px 8px; background: transparent; color: var(--ink-2); border: 1px solid var(--line); font-weight: 500; font-size: 12px; }
+.settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.empty { color: var(--ink-2); font-size: 14px; padding: 8px 0 2px; }
+.status { font-size: 12px; color: var(--ink-2); text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <div>
+    <div class="label">@thecollegetrader25 &middot; Trade journal</div>
+    <h1>The College Trader</h1>
+    <p class="sub" id="subtitle">XAUUSD scalps, one line per trade.</p>
+  </div>
+
+  <section class="card hero" aria-label="Account balance and progress to target">
+    <div>
+      <div class="label">Balance</div>
+      <div class="bal" id="bal">$125.00</div>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><i id="barfill"></i></div>
+    <div class="row"><span id="startlbl">Start $125.00</span><span id="targetlbl">Target $130.00</span></div>
+  </section>
+
+  <section class="stats" aria-label="Summary">
+    <div class="stat"><div class="label">Net P/L</div><div class="v" id="net">+$0.00</div></div>
+    <div class="stat"><div class="label">Trades</div><div class="v" id="cnt">0</div></div>
+    <div class="stat"><div class="label">Win rate</div><div class="v" id="wr">0%</div></div>
+    <div class="stat"><div class="label">Best / worst</div><div class="v" id="bw" style="font-size:16px">-</div></div>
+  </section>
+
+  <section class="card" aria-label="Equity curve">
+    <div class="label">Equity curve</div>
+    <div class="chart" id="eqsvg"></div>
+    <div class="legend">
+      <span><b></b>Balance</span>
+      <span><b class="dash mute"></b>Start</span>
+      <span><b class="dash"></b>Target</span>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Add a trade">
+    <div class="label">Add trade</div>
+    <div id="banner" class="note-banner" style="margin-top:10px" hidden>Ye 8 trades examples hain. Pehla asli trade ya note add karte hi ye hat jayenge.</div>
+    <div class="form">
+      <div class="field">
+        <label class="tmeta" for="amt">Amount in dollars (no sign)</label>
+        <input id="amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.50">
+      </div>
+      <div class="field">
+        <label class="tmeta" for="note">Note (optional)</label>
+        <input id="note" type="text" maxlength="80" placeholder="London open, OB retest">
+      </div>
+      <p class="err" id="err" role="alert"></p>
+      <div class="btns">
+        <button type="button" class="b-profit" id="addp">Profit +</button>
+        <button type="button" class="b-loss" id="addl">Loss &minus;</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Daily notes">
+    <div class="nhead"><div class="label">Aaj ke notes</div><div class="ncount" id="ncount">0/5</div></div>
+    <ul class="nlist" id="ntoday"></ul>
+    <div class="form">
+      <div class="field">
+        <label class="tmeta" for="nin">Naya note</label>
+        <textarea id="nin" rows="2" maxlength="240" placeholder="Aaj ka bias aur setup"></textarea>
+      </div>
+      <p class="err" id="nerr" role="alert"></p>
+      <button type="button" class="b-accent" id="nadd">Add note</button>
+    </div>
+    <div class="nolder" id="nolder"></div>
+  </section>
+
+  <section class="card" aria-label="Daily record">
+    <div class="label">Daily record</div>
+    <ul class="list days" id="days"></ul>
+    <div class="empty" id="dayempty" hidden>Din ka record pehla trade ke baad yahan dikhega.</div>
+  </section>
+
+  <section class="card" aria-label="Trade list">
+    <div class="label">Trades, newest first</div>
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="empty" hidden>No trades yet. Add your first one above.</div>
+  </section>
+
+  <section class="card" aria-label="Account settings">
+    <div class="label">Account</div>
+    <div class="settings">
+      <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
+      <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
+    </div>
+    <div class="confirm">
+      <button type="button" class="b-ghost" id="resetbtn">Reset journal</button>
+      <div id="resetconfirm" hidden>
+        <p class="err" style="min-height:0;margin:0 0 8px">Saare trades aur notes delete ho jayenge. Ye wapas nahi aayega.</p>
+        <div class="btns">
+          <button type="button" class="b-loss" id="resetyes">Haan, reset karo</button>
+          <button type="button" class="b-ghost" id="resetno">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+(function () {
+  var EXAMPLE = {
+    start: 125, target: 130, notes: [],
+    trades: [
+      { id: 'x1', pl: 1.5, note: 'London open, OB retest' },
+      { id: 'x2', pl: -1, note: 'Stopped out before NY' },
+      { id: 'x3', pl: 2, note: 'Liquidity sweep, 1:2' },
+      { id: 'x4', pl: 1, note: 'FVG fill' },
+      { id: 'x5', pl: -0.5, note: 'Early exit, news' },
+      { id: 'x6', pl: 2, note: 'BOS and retest' },
+      { id: 'x7', pl: -1.5, note: 'Chased the move' },
+      { id: 'x8', pl: 1.5, note: 'Asian range break' }
+    ]
+  };
+
+  var state = clone(EXAMPLE);
+  var isExample = true;
+  var chart = null;
+  var dbDoc = null;
+  var LS_KEY = 'trade-journal-v1';
+  var writing = Promise.resolve();
+
+  function $(id) { return document.getElementById(id); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function r2(v) { return Math.round(v * 100) / 100; }
+  function money(v) { return (v < 0 ? '-' : '') + '$' + Math.abs(v).toFixed(2); }
+  function signed(v) { return (v < 0 ? '-' : '+') + '$' + Math.abs(v).toFixed(2); }
+  
+
+  function balances() {
+    var out = [state.start], i;
+    for (i = 0; i < state.trades.length; i++) out.push(r2(out[i] + state.trades[i].pl));
+    return out;
+  }
+
+  function render() {
+    var bal = balances();
+    var last = bal[bal.length - 1];
+    var net = r2(last - state.start);
+    var t = state.trades;
+    var wins = t.filter(function (x) { return x.pl > 0; }).length;
+
+    $('bal').textContent = money(last);
+    $('startlbl').textContent = 'Start ' + money(state.start);
+    $('targetlbl').textContent = 'Target ' + money(state.target);
+    var span = state.target - state.start;
+    var pct = span > 0 ? Math.max(0, Math.min(100, ((last - state.start) / span) * 100)) : 0;
+    $('barfill').style.width = pct.toFixed(1) + '%';
+    $('bar').setAttribute('aria-valuenow', String(Math.round(pct)));
+    $('subtitle').textContent = span > 0
+      ? (last >= state.target ? 'Target reached. Lock it in.' : money(r2(state.target - last)) + ' to go for the target.')
+      : 'Set a target above your start balance.';
+
+    var netEl = $('net');
+    netEl.textContent = signed(net);
+    netEl.className = 'v ' + (net > 0 ? 'pos' : net < 0 ? 'neg' : '');
+    $('cnt').textContent = String(t.length);
+    $('wr').textContent = t.length ? Math.round((wins / t.length) * 100) + '%' : '0%';
+    if (t.length) {
+      var pls = t.map(function (x) { return x.pl; });
+      $('bw').textContent = signed(Math.max.apply(null, pls)) + ' / ' + signed(Math.min.apply(null, pls));
+    } else { $('bw').textContent = '-'; }
+
+    $('banner').hidden = !isExample;
+    $('start').value = String(state.start);
+    $('target').value = String(state.target);
+    renderList();
+    renderDaily();
+    renderNotes();
+    renderChart(bal);
+  }
+
+  var PROMPTS = ['Aaj ka bias aur setup', 'Best trade ka reason', 'Sabse badi galti', 'Rule follow kiya ya toda?', 'Kal ke liye plan'];
+
+  function noteItem(n) {
+    var li = document.createElement('li');
+    var txt = document.createElement('div'); txt.className = 'ntext'; txt.textContent = n.text;
+    var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
+    del.setAttribute('aria-label', 'Delete note');
+    del.onclick = function () { removeNote(n.id); };
+    li.appendChild(txt); li.appendChild(del);
+    return li;
+  }
+
+  function renderNotes() {
+    var todayKey = dayKey(Date.now());
+    var all = state.notes || [];
+    var today = all.filter(function (n) { return dayKey(n.t) === todayKey; });
+    var older = all.filter(function (n) { return dayKey(n.t) !== todayKey; });
+    $('ncount').textContent = today.length + '/5';
+    $('nin').placeholder = PROMPTS[Math.min(today.length, 4)];
+    var ul = $('ntoday'); ul.textContent = '';
+    today.forEach(function (n) { ul.appendChild(noteItem(n)); });
+    var box = $('nolder'); box.textContent = '';
+    var groups = [], map = {};
+    older.slice().sort(function (a, b) { return b.t - a.t; }).forEach(function (n) {
+      var k = dayKey(n.t);
+      if (!map[k]) { map[k] = { t: n.t, items: [] }; groups.push(map[k]); }
+      map[k].items.push(n);
+    });
+    groups.forEach(function (g) {
+      var wrap = document.createElement('div');
+      var h = document.createElement('div'); h.className = 'dlabel';
+      h.textContent = new Date(g.t).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+      var l = document.createElement('ul'); l.className = 'nlist';
+      g.items.slice().sort(function (a, b) { return a.t - b.t; }).forEach(function (n) { l.appendChild(noteItem(n)); });
+      wrap.appendChild(h); wrap.appendChild(l); box.appendChild(wrap);
+    });
+  }
+
+  function addNote() {
+    var text = $('nin').value.trim();
+    var todayKey = dayKey(Date.now());
+    var count = (state.notes || []).filter(function (n) { return dayKey(n.t) === todayKey; }).length;
+    if (!text) { $('nerr').textContent = 'Pehle note likho.'; $('nin').focus(); return; }
+    if (count >= 5) { $('nerr').textContent = 'Aaj ke 5 notes ho gaye. Koi note delete karo ya kal naya din shuru karo.'; return; }
+    $('nerr').textContent = '';
+    leaveExample();
+    state.notes = (state.notes || []).concat([{ id: 'n' + Date.now(), t: Date.now(), text: text }]);
+    $('nin').value = '';
+    persist(); render();
+  }
+
+  function removeNote(id) {
+    state.notes = (state.notes || []).filter(function (n) { return n.id !== id; });
+    if (!isExample) persist();
+    render();
+  }
+
+  function resetAll() {
+    state = { start: state.start, target: state.target, trades: [], notes: [] };
+    isExample = false;
+    $('resetconfirm').hidden = true; $('resetbtn').hidden = false;
+    persist(); render();
+  }
+
+  function dayKey(ts) { var d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+
+  function renderDaily() {
+    var ul = $('days');
+    ul.textContent = '';
+    var groups = [], map = {}, run = state.start, i;
+    state.trades.forEach(function (tr) {
+      var k = tr.t ? dayKey(tr.t) : 'example';
+      var g = map[k];
+      if (!g) { g = { t: tr.t, n: 0, w: 0, pl: 0, close: run }; map[k] = g; groups.push(g); }
+      g.n++; if (tr.pl > 0) g.w++;
+      g.pl = r2(g.pl + tr.pl); run = r2(run + tr.pl); g.close = run;
+    });
+    $('dayempty').hidden = groups.length > 0;
+    var todayKey = dayKey(Date.now());
+    for (i = groups.length - 1; i >= 0; i--) {
+      var g2 = groups[i];
+      var li = document.createElement('li');
+      var main = document.createElement('div'); main.className = 'tmain';
+      var lab = document.createElement('div'); lab.className = 'dlabel';
+      lab.textContent = g2.t ? new Date(g2.t).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : 'Example days';
+      if (g2.t && dayKey(g2.t) === todayKey) { var tg = document.createElement('span'); tg.className = 'today'; tg.textContent = 'Today'; lab.appendChild(tg); }
+      var meta = document.createElement('div'); meta.className = 'tmeta';
+      meta.textContent = g2.n + (g2.n === 1 ? ' trade' : ' trades') + ' · ' + g2.w + 'W ' + (g2.n - g2.w) + 'L · closed ' + money(g2.close);
+      main.appendChild(lab); main.appendChild(meta);
+      var pl = document.createElement('span'); pl.className = 'tpl ' + (g2.pl >= 0 ? 'pos' : 'neg'); pl.style.fontSize = '17px'; pl.textContent = signed(g2.pl);
+      li.appendChild(main); li.appendChild(pl);
+      ul.appendChild(li);
+    }
+  }
+
+  function renderList() {
+    var ul = $('list');
+    ul.textContent = '';
+    var t = state.trades;
+    $('empty').hidden = t.length > 0;
+    for (var i = t.length - 1; i >= 0; i--) {
+      (function (idx) {
+        var tr = t[idx];
+        var li = document.createElement('li');
+        var no = document.createElement('span'); no.className = 'tno'; no.textContent = '#' + (idx + 1);
+        var main = document.createElement('div'); main.className = 'tmain';
+        var note = document.createElement('div'); note.className = 'tnote'; note.textContent = tr.note || (tr.pl >= 0 ? 'Profit' : 'Loss');
+        var meta = document.createElement('div'); meta.className = 'tmeta';
+        meta.textContent = tr.t ? new Date(tr.t).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'Example';
+        main.appendChild(note); main.appendChild(meta);
+        var pl = document.createElement('span'); pl.className = 'tpl ' + (tr.pl >= 0 ? 'pos' : 'neg'); pl.textContent = signed(tr.pl);
+        var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
+        del.setAttribute('aria-label', 'Delete trade ' + (idx + 1));
+        del.onclick = function () { removeTrade(idx); };
+        li.appendChild(no); li.appendChild(main); li.appendChild(pl); li.appendChild(del);
+        ul.appendChild(li);
+      })(i);
+    }
+  }
+
+  function renderChart(bal) {
+    var box = $('eqsvg');
+    if (!box) return;
+    var W = 360, H = 250, L = 46, R = 14, T = 12, B = 36, i, v;
+    var lo = Math.min(Math.min.apply(null, bal), state.start), hi = Math.max(Math.max.apply(null, bal), state.target);
+    var pad = Math.max(0.5, (hi - lo) * 0.15);
+    lo = Math.floor((lo - pad) * 2) / 2; hi = Math.ceil((hi + pad) * 2) / 2;
+    var rng = hi - lo, step = rng <= 4 ? 0.5 : rng <= 8 ? 1 : Math.ceil(rng / 6);
+    function X(k) { return bal.length === 1 ? L + (W - L - R) / 2 : L + (W - L - R) * k / (bal.length - 1); }
+    function Y(val) { return T + (H - T - B) * (1 - (val - lo) / rng); }
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Equity curve of account balance after each trade" xmlns="http://www.w3.org/2000/svg">';
+    for (v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" style="stroke:var(--grid)" stroke-width="1"/>' +
+           '<text x="' + (L - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end" font-size="11" style="fill:var(--ink-2)">$' + (Math.round(v * 100) / 100) + '</text>';
+    }
+    var every = Math.max(1, Math.ceil((bal.length - 1) / 9));
+    for (i = 0; i < bal.length; i++) {
+      if (i === 0 || i % every === 0 || i === bal.length - 1) {
+        s += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="middle" font-size="11" style="fill:var(--ink-2)">' + (i === 0 ? 'Start' : i) + '</text>';
+      }
+    }
+    s += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 3) + '" text-anchor="middle" font-size="11" style="fill:var(--ink-2)">Trade number</text>';
+    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(state.start).toFixed(1) + '" y2="' + Y(state.start).toFixed(1) + '" style="stroke:var(--ink-2)" stroke-width="1" stroke-dasharray="5 4"/>';
+    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(state.target).toFixed(1) + '" y2="' + Y(state.target).toFixed(1) + '" style="stroke:var(--accent)" stroke-width="1" stroke-dasharray="5 4"/>';
+    var pts = bal.map(function (b, k) { return X(k).toFixed(1) + ',' + Y(b).toFixed(1); });
+    if (bal.length > 1) {
+      s += '<path d="M' + pts.join(' L') + ' L' + X(bal.length - 1).toFixed(1) + ',' + Y(lo).toFixed(1) + ' L' + X(0).toFixed(1) + ',' + Y(lo).toFixed(1) + ' Z" style="fill:var(--accent);fill-opacity:0.12;stroke:none"/>';
+      s += '<path d="M' + pts.join(' L') + '" fill="none" style="stroke:var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    }
+    for (i = 0; i < bal.length; i++) {
+      var col = i === 0 ? 'var(--accent)' : (state.trades[i - 1].pl >= 0 ? 'var(--profit)' : 'var(--loss)');
+      s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(bal[i]).toFixed(1) + '" r="4.5" style="fill:' + col + ';stroke:var(--surface)" stroke-width="2"><title>' + (i === 0 ? 'Start ' : 'Trade ' + i + ': ') + money(bal[i]) + '</title></circle>';
+    }
+    s += '</svg>';
+    box.innerHTML = s;
+  }
+
+  function setStatus(msg) { $('status').textContent = msg || ''; }
+
+  function persist() {
+    var payload = { start: state.start, target: state.target, trades: state.trades, notes: state.notes || [] };
+    if (dbDoc) {
+      writing = writing.then(function () { return dbDoc.set(payload); }).then(function () { setStatus('Saved'); }, function () { setStatus('Could not save. Check your connection and try again.'); });
+    } else {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); setStatus('Saved on this device'); } catch (e) { setStatus('Saving is not available here.'); }
+    }
+  }
+
+  function leaveExample() {
+    if (isExample) { state = { start: state.start, target: state.target, trades: [], notes: [] }; isExample = false; }
+  }
+
+  function addTrade(sign) {
+    var v = parseFloat($('amt').value);
+    if (isNaN(v) || v <= 0) { $('err').textContent = 'Enter an amount above 0, like 1.50.'; $('amt').focus(); return; }
+    $('err').textContent = '';
+    leaveExample();
+    state.trades.push({ id: 't' + Date.now(), pl: r2(sign * v), note: $('note').value.trim(), t: Date.now() });
+    $('amt').value = ''; $('note').value = '';
+    persist(); render();
+  }
+
+  function removeTrade(idx) {
+    if (isExample) { state.trades.splice(idx, 1); render(); return; }
+    state.trades.splice(idx, 1);
+    persist(); render();
+  }
+
+  function saveSettings() {
+    var s = parseFloat($('start').value), tg = parseFloat($('target').value);
+    if (isNaN(s) || s < 0 || isNaN(tg) || tg < 0) { return; }
+    if (s === state.start && tg === state.target) return;
+    state.start = s; state.target = tg;
+    if (!isExample) persist();
+    render();
+  }
+
+  $('addp').onclick = function () { addTrade(1); };
+  $('addl').onclick = function () { addTrade(-1); };
+  $('amt').addEventListener('input', function () { $('err').textContent = ''; });
+  $('nadd').onclick = addNote;
+  $('nin').addEventListener('input', function () { $('nerr').textContent = ''; });
+  $('resetbtn').onclick = function () { $('resetbtn').hidden = true; $('resetconfirm').hidden = false; };
+  $('resetno').onclick = function () { $('resetconfirm').hidden = true; $('resetbtn').hidden = false; };
+  $('resetyes').onclick = resetAll;
+  $('start').addEventListener('change', saveSettings);
+  $('target').addEventListener('change', saveSettings);
+
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  if (mq && mq.addEventListener) mq.addEventListener('change', function () { render(); });
+
+  function applyLoaded(d) {
+    if (d && Array.isArray(d.trades)) {
+      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
+      isExample = false;
+    }
+  }
+
+  function loadLocal() {
+    try { var raw = localStorage.getItem(LS_KEY); if (raw) applyLoaded(JSON.parse(raw)); } catch (e) {}
+    render();
+  }
+
+  render();
+
+  if (window.claude && window.claude.use) {
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+      var db = r[0], user = r[1];
+      if (!db || !user) { loadLocal(); return null; }
+      return user.id().then(function (uid) {
+        if (!uid) { loadLocal(); return; }
+        dbDoc = db.doc('data/users/' + uid + '/journal');
+        dbDoc.onSnapshot(function (snap) {
+          if (snap.exists) { applyLoaded(snap.data()); }
+          render();
+        }, function () { dbDoc = null; loadLocal(); });
+      });
+    }, function () { loadLocal(); });
+  } else {
+    loadLocal();
+  }
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>
