@@ -108,7 +108,7 @@ textarea { resize: vertical; line-height: 1.4; }
 .ncount { font-family: var(--font-num); font-size: 12px; color: var(--ink-2); }
 .nhead { display: flex; justify-content: space-between; align-items: baseline; }
 .confirm { margin-top: 10px; }
-input[type="number"], input[type="text"], textarea {
+input[type="number"], input[type="text"], textarea, select {
   width: 100%; font: inherit; color: var(--ink); background: var(--bg);
   border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px;
 }
@@ -140,6 +140,27 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
 .cal-d { font-size: 11px; color: var(--ink-2); }
 .cal-v { font-family: var(--font-num); font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .cal-sum { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.seg button { background: var(--bg); color: var(--ink-2); border-color: var(--line); font-weight: 600; }
+.seg button.sel { background: var(--accent); color: var(--on-fill); border-color: var(--accent); }
+.calc { font-size: 13px; color: var(--ink-2); margin: 0; }
+.hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+.tdet { font-size: 12px; color: var(--ink-2); font-family: var(--font-num); overflow-wrap: anywhere; }
+select { font: inherit; }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.kpi { background: var(--bg); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.kpi .v { font-family: var(--font-num); font-size: 17px; font-weight: 500; margin-top: 2px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bsec { margin-top: 18px; }
+.brow { margin-top: 10px; }
+.bhead { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.bname { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.bval { font-family: var(--font-num); font-weight: 500; font-variant-numeric: tabular-nums; }
+.bmeta { font-size: 12px; color: var(--ink-2); }
+.bbar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bbar i { display: block; height: 100%; border-radius: 3px; }
+.bnone { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
 .tno { font-family: var(--font-num); font-size: 12px; color: var(--ink-2); }
 .tmain { min-width: 0; }
 .tnote { overflow-wrap: anywhere; font-size: 14px; }
@@ -188,19 +209,73 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
     </div>
   </section>
 
+  <section class="card" aria-label="Dashboard">
+    <div class="label">Dashboard</div>
+    <div class="kpis" id="kpis"></div>
+    <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
+    <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
+    <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
+  </section>
+
   <section class="card" aria-label="Add a trade">
     <div class="label">Add trade</div>
     <div id="banner" class="note-banner" style="margin-top:10px" hidden>Ye 8 trades examples hain. Pehla asli trade ya note add karte hi ye hat jayenge.</div>
     <div class="form">
       <div class="field">
-        <label class="tmeta" for="amt">Amount in dollars (no sign)</label>
-        <input id="amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.50">
+        <label class="tmeta" for="tdate">Date</label>
+        <input id="tdate" type="date">
+        <span class="tdet" id="tdatefmt"></span>
       </div>
       <div class="field">
-        <label class="tmeta" for="note">Note (optional)</label>
-        <input id="note" type="text" maxlength="80" placeholder="London open, OB retest">
+        <span class="tmeta">Direction</span>
+        <div class="seg">
+          <button type="button" id="dirb">Buy</button>
+          <button type="button" id="dirs">Sell</button>
+        </div>
       </div>
+      <div class="row3">
+        <div class="field"><label class="tmeta" for="ent">Entry</label><input id="ent" type="number" inputmode="decimal" step="any" placeholder="2650.50"></div>
+        <div class="field"><label class="tmeta" for="ext">Exit</label><input id="ext" type="number" inputmode="decimal" step="any" placeholder="2653.00"></div>
+        <div class="field"><label class="tmeta" for="lots">Lots</label><input id="lots" type="number" inputmode="decimal" step="any" min="0" placeholder="0.10"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label class="tmeta" for="sess">Session</label>
+          <select id="sess">
+            <option value="">Chuno</option>
+            <option value="Asian">Asian</option>
+            <option value="London">London</option>
+            <option value="NY">NY</option>
+            <option value="London-NY overlap">London-NY overlap</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="tmeta" for="fees">Fees ($)</label>
+          <input id="fees" type="number" inputmode="decimal" step="any" min="0" placeholder="0.50">
+        </div>
+      </div>
+      <div class="field">
+        <label class="tmeta" for="ltag">Logic</label>
+        <select id="ltag">
+          <option value="">Tag chuno</option>
+          <option value="Liquidity sweep">Liquidity sweep</option>
+          <option value="OB">OB</option>
+          <option value="FVG">FVG</option>
+          <option value="BOS/CHoCH">BOS/CHoCH</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="tmeta" for="logic">1 line note</label>
+        <input id="logic" type="text" maxlength="120" placeholder="London open sweep, 15m OB retest">
+      </div>
+      <p class="calc" id="calc"></p>
       <p class="err" id="err" role="alert"></p>
+      <button type="button" class="b-accent" id="saveauto">Save trade</button>
+      <hr class="hr">
+      <div class="field">
+        <label class="tmeta" for="amt">Ya seedha P&amp;L likho (fees ke baad, dollars, bina sign)</label>
+        <input id="amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.50">
+      </div>
       <div class="btns">
         <button type="button" class="b-profit" id="addp">Profit +</button>
         <button type="button" class="b-loss" id="addl">Loss &minus;</button>
@@ -250,6 +325,7 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
+      <div class="field"><label class="tmeta" for="contract">Oz per lot (gold = 100)</label><input id="contract" type="number" inputmode="decimal" step="any" min="0"></div>
     </div>
     <div class="confirm">
       <button type="button" class="b-ghost" id="resetbtn">Reset journal</button>
@@ -332,11 +408,15 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
 
     $('banner').hidden = !isExample;
     $('start').value = String(state.start);
+    $('contract').value = String(contractSize());
+    if (!$('tdate').value) setToday();
+    updateCalc();
     $('target').value = String(state.target);
     renderList();
     renderDaily();
     renderNotes();
     renderCalendar();
+    renderDashboard();
     renderChart(bal);
   }
 
@@ -398,10 +478,88 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
   }
 
   function resetAll() {
-    state = { start: state.start, target: state.target, trades: [], notes: [] };
+    state = { start: state.start, target: state.target, contract: state.contract, trades: [], notes: [] };
     isExample = false;
     $('resetconfirm').hidden = true; $('resetbtn').hidden = false;
     persist(); render();
+  }
+
+  function renderDashboard() {
+    var t = state.trades, n = t.length, i;
+    var bal = balances();
+    var wins = t.filter(function (x) { return x.pl > 0; });
+    var losses = t.filter(function (x) { return x.pl < 0; });
+    var gw = 0, gl = 0, fees = 0;
+    wins.forEach(function (x) { gw += x.pl; });
+    losses.forEach(function (x) { gl += Math.abs(x.pl); });
+    t.forEach(function (x) { if (x.fees) fees += x.fees; });
+    var net = r2(gw - gl);
+    var pf = gl > 0 ? (gw / gl).toFixed(2) : (gw > 0 ? 'No loss' : '-');
+    var avgW = wins.length ? signed(r2(gw / wins.length)) : '-';
+    var avgL = losses.length ? signed(-r2(gl / losses.length)) : '-';
+    var exp = n ? signed(r2(net / n)) : '-';
+    var peak = bal[0], dd = 0;
+    for (i = 0; i < bal.length; i++) { if (bal[i] > peak) peak = bal[i]; if (peak - bal[i] > dd) dd = peak - bal[i]; }
+    var ws = 0, ls = 0, cw = 0, cl = 0;
+    t.forEach(function (x) {
+      if (x.pl > 0) { cw++; cl = 0; } else if (x.pl < 0) { cl++; cw = 0; } else { cw = 0; cl = 0; }
+      if (cw > ws) ws = cw; if (cl > ls) ls = cl;
+    });
+    var items = [
+      ['Profit factor', pf, ''],
+      ['Expectancy per trade', exp, n ? (net >= 0 ? 'pos' : 'neg') : ''],
+      ['Avg win', avgW, wins.length ? 'pos' : ''],
+      ['Avg loss', avgL, losses.length ? 'neg' : ''],
+      ['Max drawdown', n ? '-$' + dd.toFixed(2) : '-', dd > 0 ? 'neg' : ''],
+      ['Fees paid', '$' + fees.toFixed(2), ''],
+      ['Longest win streak', String(ws), ''],
+      ['Longest loss streak', String(ls), '']
+    ];
+    var box = $('kpis'); box.textContent = '';
+    items.forEach(function (it) {
+      var d = document.createElement('div'); d.className = 'kpi';
+      var l = document.createElement('div'); l.className = 'label'; l.textContent = it[0];
+      var v = document.createElement('div'); v.className = 'v ' + it[2]; v.textContent = it[1];
+      d.appendChild(l); d.appendChild(v); box.appendChild(d);
+    });
+    breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Trade add karte waqt Session chuno, phir yahan dikhega.');
+    breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Trade add karte waqt Logic tag chuno, phir yahan dikhega.');
+    breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Trade add karte waqt Buy ya Sell chuno, phir yahan dikhega.');
+  }
+
+  function breakdown(id, keyFn, order, emptyMsg) {
+    var g = {}, keys = [];
+    state.trades.forEach(function (x) {
+      var k = keyFn(x);
+      if (!k) return;
+      if (!g[k]) { g[k] = { n: 0, w: 0, pl: 0 }; keys.push(k); }
+      g[k].n++; if (x.pl > 0) g[k].w++; g[k].pl = r2(g[k].pl + x.pl);
+    });
+    keys.sort(function (a, b) {
+      var ia = order.indexOf(a), ib = order.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    var box = $(id); box.textContent = '';
+    if (!keys.length) { var e = document.createElement('p'); e.className = 'bnone'; e.textContent = emptyMsg; box.appendChild(e); return; }
+    var max = 0;
+    keys.forEach(function (k) { if (Math.abs(g[k].pl) > max) max = Math.abs(g[k].pl); });
+    keys.forEach(function (k) {
+      var r = g[k];
+      var row = document.createElement('div'); row.className = 'brow';
+      var hd = document.createElement('div'); hd.className = 'bhead';
+      var nm = document.createElement('span'); nm.className = 'bname'; nm.textContent = k;
+      var vl = document.createElement('span'); vl.className = 'bval ' + (r.pl >= 0 ? 'pos' : 'neg'); vl.textContent = signed(r.pl);
+      hd.appendChild(nm); hd.appendChild(vl);
+      var mt = document.createElement('div'); mt.className = 'bmeta';
+      mt.textContent = r.n + (r.n === 1 ? ' trade' : ' trades') + ' \u00b7 ' + Math.round(r.w / r.n * 100) + '% win';
+      var bar = document.createElement('div'); bar.className = 'bbar';
+      var fill = document.createElement('i');
+      fill.style.width = (max > 0 ? Math.max(4, Math.abs(r.pl) / max * 100) : 4).toFixed(0) + '%';
+      fill.style.background = r.pl >= 0 ? 'var(--profit)' : 'var(--loss)';
+      bar.appendChild(fill);
+      row.appendChild(hd); row.appendChild(mt); row.appendChild(bar);
+      box.appendChild(row);
+    });
   }
 
   var calMonth = null;
@@ -491,10 +649,18 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
         var li = document.createElement('li');
         var no = document.createElement('span'); no.className = 'tno'; no.textContent = '#' + (idx + 1);
         var main = document.createElement('div'); main.className = 'tmain';
-        var note = document.createElement('div'); note.className = 'tnote'; note.textContent = tr.note || (tr.pl >= 0 ? 'Profit' : 'Loss');
+        var note = document.createElement('div'); note.className = 'tnote'; note.textContent = [tr.tag, tr.logic || tr.note].filter(Boolean).join(' - ') || (tr.pl >= 0 ? 'Profit' : 'Loss');
         var meta = document.createElement('div'); meta.className = 'tmeta';
-        meta.textContent = tr.t ? new Date(tr.t).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : 'Example';
-        main.appendChild(note); main.appendChild(meta);
+        meta.textContent = tr.t ? fmtDMY(tr.t) : 'Example';
+        main.appendChild(note);
+        var parts = [tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE')];
+        if (tr.dir) parts.push(tr.dir);
+        if (tr.entry !== undefined && tr.exit !== undefined) parts.push(tr.entry + ' > ' + tr.exit);
+        if (tr.lots !== undefined) parts.push(tr.lots + ' lot');
+        if (tr.session) parts.push(tr.session);
+        if (tr.fees) parts.push('Fees $' + tr.fees);
+        if (parts.length) { var det = document.createElement('div'); det.className = 'tdet'; det.textContent = parts.join(' | '); main.appendChild(det); }
+        main.appendChild(meta);
         var pl = document.createElement('span'); pl.className = 'tpl ' + (tr.pl >= 0 ? 'pos' : 'neg'); pl.textContent = signed(tr.pl);
         var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
         del.setAttribute('aria-label', 'Delete trade ' + (idx + 1));
@@ -545,7 +711,7 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
   function setStatus(msg) { $('status').textContent = msg || ''; }
 
   function persist() {
-    var payload = { start: state.start, target: state.target, trades: state.trades, notes: state.notes || [] };
+    var payload = { start: state.start, target: state.target, contract: state.contract || 100, trades: state.trades, notes: state.notes || [] };
     if (dbDoc) {
       writing = writing.then(function () { return dbDoc.set(payload); }).then(function () { setStatus('Saved'); }, function () { setStatus('Could not save. Check your connection and try again.'); });
     } else {
@@ -554,17 +720,90 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
   }
 
   function leaveExample() {
-    if (isExample) { state = { start: state.start, target: state.target, trades: [], notes: [] }; isExample = false; }
+    if (isExample) { state = { start: state.start, target: state.target, contract: state.contract, trades: [], notes: [] }; isExample = false; }
   }
 
-  function addTrade(sign) {
-    var v = parseFloat($('amt').value);
-    if (isNaN(v) || v <= 0) { $('err').textContent = 'Enter an amount above 0, like 1.50.'; $('amt').focus(); return; }
+  var dir = '';
+
+  function numv(id) { var x = parseFloat($(id).value); return isNaN(x) ? null : x; }
+
+  function contractSize() { return state.contract > 0 ? state.contract : 100; }
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDMY(ts) { var d = new Date(ts); return pad(d.getDate()) + '-' + pad(d.getMonth() + 1) + '-' + d.getFullYear(); }
+  function showDate() { var v = $('tdate').value; $('tdatefmt').textContent = v ? v.split('-').reverse().join('-') : ''; }
+  function setToday() { var d = new Date(); $('tdate').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); showDate(); }
+  function tradeTime() {
+    var v = $('tdate').value;
+    if (!v) return Date.now();
+    var p = v.split('-'), y = +p[0], m = +p[1] - 1, d = +p[2], n = new Date();
+    if (y === n.getFullYear() && m === n.getMonth() && d === n.getDate()) return Date.now();
+    return new Date(y, m, d, 12, 0, 0).getTime();
+  }
+  function feesv() { var f = numv('fees'); return f === null ? 0 : f; }
+
+  function calcGross() {
+    var e = numv('ent'), x = numv('ext'), l = numv('lots');
+    if (!dir || e === null || x === null || l === null || l <= 0) return null;
+    return r2((dir === 'Buy' ? x - e : e - x) * l * contractSize());
+  }
+
+  function calcPL() {
+    var g = calcGross();
+    return g === null ? null : r2(g - feesv());
+  }
+
+  function updateCalc() {
+    var g = calcGross(), el = $('calc');
+    if (g === null) { el.textContent = 'Direction, entry, exit aur lots bharo, P&L khud nikal jayega.'; el.className = 'calc'; return; }
+    var net = r2(g - feesv());
+    el.textContent = 'P&L: ' + signed(net) + ' fees ke baad (gross ' + signed(g) + ', fees $' + feesv().toFixed(2) + ', ' + contractSize() + ' oz per lot)';
+    el.className = 'calc ' + (net >= 0 ? 'pos' : 'neg');
+  }
+
+  function setDir(d) {
+    dir = dir === d ? '' : d;
+    $('dirb').className = dir === 'Buy' ? 'sel' : '';
+    $('dirs').className = dir === 'Sell' ? 'sel' : '';
     $('err').textContent = '';
+    updateCalc();
+  }
+
+  function saveTrade(pl) {
     leaveExample();
-    state.trades.push({ id: 't' + Date.now(), pl: r2(sign * v), note: $('note').value.trim(), t: Date.now() });
-    $('amt').value = ''; $('note').value = '';
+    var tr = { id: 't' + Date.now(), pl: pl, t: tradeTime() };
+    var e = numv('ent'), x = numv('ext'), l = numv('lots'), f = numv('fees');
+    if (dir) tr.dir = dir;
+    if (e !== null) tr.entry = e;
+    if (x !== null) tr.exit = x;
+    if (l !== null) tr.lots = l;
+    if (f !== null) tr.fees = f;
+    if ($('sess').value) tr.session = $('sess').value;
+    if ($('ltag').value) tr.tag = $('ltag').value;
+    var lg = $('logic').value.trim();
+    if (lg) tr.logic = lg;
+    tr.res = pl > 0 ? 'Win' : pl < 0 ? 'Loss' : 'BE';
+    state.trades.push(tr);
+    state.trades.sort(function (a, b) { return (a.t || 0) - (b.t || 0); });
+    ['ent', 'ext', 'lots', 'fees', 'amt', 'logic'].forEach(function (i) { $(i).value = ''; });
+    $('sess').value = ''; $('ltag').value = '';
+    dir = ''; $('dirb').className = ''; $('dirs').className = '';
+    $('err').textContent = '';
+    setToday();
+    updateCalc();
     persist(); render();
+  }
+
+  function addAuto() {
+    var p = calcPL();
+    if (p === null) { $('err').textContent = 'Buy ya Sell chuno aur entry, exit, lots bharo. Ya neeche seedha amount daalo.'; return; }
+    saveTrade(p);
+  }
+
+  function addManual(sign) {
+    var v = numv('amt');
+    if (v === null || v <= 0) { $('err').textContent = 'Amount 0 se zyada daalo, jaise 1.50.'; $('amt').focus(); return; }
+    saveTrade(r2(sign * v));
   }
 
   function removeTrade(idx) {
@@ -574,16 +813,22 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
   }
 
   function saveSettings() {
-    var s = parseFloat($('start').value), tg = parseFloat($('target').value);
-    if (isNaN(s) || s < 0 || isNaN(tg) || tg < 0) { return; }
-    if (s === state.start && tg === state.target) return;
-    state.start = s; state.target = tg;
+    var s = parseFloat($('start').value), tg = parseFloat($('target').value), ct = parseFloat($('contract').value);
+    if (isNaN(s) || s < 0 || isNaN(tg) || tg < 0 || isNaN(ct) || ct <= 0) { return; }
+    if (s === state.start && tg === state.target && ct === contractSize()) return;
+    state.start = s; state.target = tg; state.contract = ct;
     if (!isExample) persist();
     render();
   }
 
-  $('addp').onclick = function () { addTrade(1); };
-  $('addl').onclick = function () { addTrade(-1); };
+  $('addp').onclick = function () { addManual(1); };
+  $('saveauto').onclick = addAuto;
+  $('tdate').addEventListener('change', showDate);
+  $('dirb').onclick = function () { setDir('Buy'); };
+  $('dirs').onclick = function () { setDir('Sell'); };
+  ['ent', 'ext', 'lots', 'fees'].forEach(function (i) { $(i).addEventListener('input', function () { $('err').textContent = ''; updateCalc(); }); });
+  $('contract').addEventListener('change', saveSettings);
+  $('addl').onclick = function () { addManual(-1); };
   $('amt').addEventListener('input', function () { $('err').textContent = ''; });
   $('calprev').onclick = function () { calMonth.m--; if (calMonth.m < 0) { calMonth.m = 11; calMonth.y--; } renderCalendar(); };
   $('calnext').onclick = function () { calMonth.m++; if (calMonth.m > 11) { calMonth.m = 0; calMonth.y++; } renderCalendar(); };
@@ -600,7 +845,7 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
 
   function applyLoaded(d) {
     if (d && Array.isArray(d.trades)) {
-      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
+      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, contract: Number(d.contract) || 100, trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
       isExample = false;
     }
   }
