@@ -161,6 +161,19 @@ select { font: inherit; }
 .bbar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-top: 4px; }
 .bbar i { display: block; height: 100%; border-radius: 3px; }
 .bnone { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+[hidden] { display: none !important; }
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; background: var(--bg); scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { flex: none; min-height: 40px; padding: 6px 14px; border-radius: 20px; background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); font-weight: 600; font-size: 13px; white-space: nowrap; }
+.tabs button.on { background: var(--accent); color: var(--on-fill); border-color: var(--accent); }
+.panel { display: flex; flex-direction: column; gap: 16px; }
+.shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+.radar svg { display: block; width: 100%; height: auto; max-width: 360px; margin: 0 auto; }
+.rtitle { font-size: 18px; font-weight: 600; margin-top: 14px; }
+.rl { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.dwr { margin-top: 14px; }
+.stat .tmeta { margin-top: 2px; }
 .tno { font-family: var(--font-num); font-size: 12px; color: var(--ink-2); }
 .tmain { min-width: 0; }
 .tnote { overflow-wrap: anywhere; font-size: 14px; }
@@ -183,6 +196,16 @@ select { font: inherit; }
     </div>
   </div>
 
+  <nav class="tabs" role="tablist" aria-label="Journal sections">
+    <button type="button" role="tab" id="tab-dash">Dashboard</button>
+    <button type="button" role="tab" id="tab-journal">Journal</button>
+    <button type="button" role="tab" id="tab-analytics">Analytics</button>
+    <button type="button" role="tab" id="tab-perf">Performance</button>
+    <button type="button" role="tab" id="tab-reports">Reports</button>
+  </nav>
+
+  <div class="panel" id="p-dash">
+  <div id="banner2" class="note-banner" hidden>Showing example trades. Open the Journal tab and add your first real trade to replace them.</div>
   <section class="card hero" aria-label="Account balance and progress to target">
     <div>
       <div class="label">Balance</div>
@@ -199,6 +222,8 @@ select { font: inherit; }
     <div class="stat"><div class="label">Best / worst</div><div class="v" id="bw" style="font-size:16px">-</div></div>
   </section>
 
+  <section class="stats" id="hl" aria-label="Highlights"></section>
+
   <section class="card" aria-label="Equity curve">
     <div class="label">Equity curve</div>
     <div class="chart" id="eqsvg"></div>
@@ -209,14 +234,19 @@ select { font: inherit; }
     </div>
   </section>
 
-  <section class="card" aria-label="Dashboard">
-    <div class="label">Dashboard</div>
-    <div class="kpis" id="kpis"></div>
-    <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
-    <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
-    <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
+  <section class="card" aria-label="Calendar">
+    <div class="label">Calendar</div>
+    <div class="cal-head">
+      <button type="button" class="b-ghost cal-nav" id="calprev" aria-label="Previous month">&lsaquo;</button>
+      <div class="cal-title" id="caltitle"></div>
+      <button type="button" class="b-ghost cal-nav" id="calnext" aria-label="Next month">&rsaquo;</button>
+    </div>
+    <div class="cal-grid" id="calgrid"></div>
+    <div class="cal-sum" id="calsum"></div>
   </section>
+  </div>
 
+  <div class="panel" id="p-journal" hidden>
   <section class="card" aria-label="Add a trade">
     <div class="label">Add trade</div>
     <div id="banner" class="note-banner" style="margin-top:10px" hidden>These 8 trades are examples. Add your first real trade or note and they will be removed.</div>
@@ -297,17 +327,6 @@ select { font: inherit; }
     <div class="nolder" id="nolder"></div>
   </section>
 
-  <section class="card" aria-label="Calendar">
-    <div class="label">Calendar</div>
-    <div class="cal-head">
-      <button type="button" class="b-ghost cal-nav" id="calprev" aria-label="Previous month">&lsaquo;</button>
-      <div class="cal-title" id="caltitle"></div>
-      <button type="button" class="b-ghost cal-nav" id="calnext" aria-label="Next month">&rsaquo;</button>
-    </div>
-    <div class="cal-grid" id="calgrid"></div>
-    <div class="cal-sum" id="calsum"></div>
-  </section>
-
   <section class="card" aria-label="Daily record">
     <div class="label">Daily record</div>
     <ul class="list days" id="days"></ul>
@@ -318,6 +337,77 @@ select { font: inherit; }
     <div class="label">Trades, newest first</div>
     <ul class="list" id="list"></ul>
     <div class="empty" id="empty" hidden>No trades yet. Add your first one above.</div>
+  </section>
+  </div>
+
+  <div class="panel" id="p-analytics" hidden>
+  <section class="card" aria-label="Analytics overview">
+    <div class="label">Analytics overview</div>
+    <div class="kpis" id="kpis"></div>
+    <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
+    <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
+    <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
+    <div class="bsec"><div class="label">Day of week</div><div id="bweek"></div></div>
+  </section>
+  </div>
+
+  <div class="panel" id="p-perf" hidden>
+  <section class="card" aria-label="Trade score">
+    <div class="shead">
+      <div><div class="label">Trade score</div><div class="sub" id="scoresub"></div></div>
+      <div class="score" id="score">-</div>
+    </div>
+    <div class="radar" id="radar"></div>
+    <div id="pmetrics"></div>
+    <p class="calc" id="scorenote" style="margin-top:12px"></p>
+  </section>
+
+  <section class="card" aria-label="Trading activity">
+    <div class="label">Trading activity</div>
+    <div class="kpis" id="pact"></div>
+    <div class="dwr" id="dwr"></div>
+  </section>
+  </div>
+
+  <div class="panel" id="p-reports" hidden>
+  <section class="card" aria-label="Report">
+    <div class="label">Report</div>
+    <div class="seg" style="margin-top:10px">
+      <button type="button" id="rp-week">This week</button>
+      <button type="button" id="rp-month">This month</button>
+      <button type="button" id="rp-last">Last month</button>
+      <button type="button" id="rp-all">All time</button>
+    </div>
+    <div class="rtitle" id="rtitle"></div>
+    <div class="tdet" id="rrange"></div>
+    <div class="kpis" id="rkpis"></div>
+    <div class="bsec"><div class="label">Highlights</div><ul class="rl" id="rlines"></ul></div>
+    <div class="btns" style="margin-top:14px">
+      <button type="button" class="b-accent" id="rcopy">Copy summary</button>
+      <button type="button" class="b-accent" id="rcsv">Export CSV</button>
+    </div>
+    <p class="calc" id="rmsg" role="status"></p>
+  </section>
+
+  <section class="card" aria-label="Data and backup">
+    <div class="label">Data</div>
+    <p class="sub" style="margin-top:6px">Your journal is saved only on this phone. Download a backup regularly.</p>
+    <div class="form">
+      <div class="btns">
+        <button type="button" class="b-accent" id="expcsv">Export CSV</button>
+        <button type="button" class="b-accent" id="expjson">Save backup</button>
+      </div>
+      <button type="button" class="b-ghost" id="impbtn">Restore from backup</button>
+      <input id="impfile" type="file" accept=".json,application/json" hidden>
+      <div id="impconfirm" hidden>
+        <p class="calc" id="imptext"></p>
+        <div class="btns" style="margin-top:8px">
+          <button type="button" class="b-loss" id="impyes">Restore</button>
+          <button type="button" class="b-ghost" id="impno">Cancel</button>
+        </div>
+      </div>
+      <p class="calc" id="dmsg" role="status"></p>
+    </div>
   </section>
 
   <section class="card" aria-label="Account settings">
@@ -338,6 +428,7 @@ select { font: inherit; }
       </div>
     </div>
   </section>
+  </div>
 
   <div class="status" id="status"></div>
 </div>
@@ -417,6 +508,10 @@ select { font: inherit; }
     renderNotes();
     renderCalendar();
     renderDashboard();
+    renderHighlights();
+    renderPerf();
+    renderReport();
+    $('banner2').hidden = !isExample;
     renderChart(bal);
   }
 
@@ -484,6 +579,274 @@ select { font: inherit; }
     persist(); render();
   }
 
+  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var TABS = ['dash', 'journal', 'analytics', 'perf', 'reports'];
+  var rptPeriod = 'month';
+
+  function showTab(name) {
+    if (TABS.indexOf(name) < 0) name = 'dash';
+    TABS.forEach(function (t) {
+      var on = t === name;
+      $('p-' + t).hidden = !on;
+      $('tab-' + t).className = on ? 'on' : '';
+      $('tab-' + t).setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    try { localStorage.setItem('ct-tab', name); } catch (e) {}
+    try { window.scrollTo(0, 0); $('tab-' + name).scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) {}
+  }
+
+  function tile(cls, label, value, vcls, sub) {
+    var d = document.createElement('div'); d.className = cls;
+    var l = document.createElement('div'); l.className = 'label'; l.textContent = label;
+    var v = document.createElement('div'); v.className = 'v ' + (vcls || ''); v.textContent = value;
+    d.appendChild(l); d.appendChild(v);
+    if (sub) { var s = document.createElement('div'); s.className = 'tmeta'; s.textContent = sub; d.appendChild(s); }
+    return d;
+  }
+
+  function dailyTotals(list) {
+    var map = {}, out = [];
+    list.forEach(function (tr) {
+      if (!tr.t) return;
+      var k = dayKey(tr.t);
+      if (!map[k]) { map[k] = { t: tr.t, pl: 0, n: 0 }; out.push(map[k]); }
+      map[k].pl = r2(map[k].pl + tr.pl); map[k].n++;
+    });
+    return out;
+  }
+
+  function computeStats(list, startBal) {
+    var s = { n: list.length, wins: 0, losses: 0, gw: 0, gl: 0, fees: 0, best: null, worst: null, dd: 0, peak: startBal };
+    var run = startBal, ws = 0, ls = 0, cw = 0, cl = 0;
+    list.forEach(function (x) {
+      if (x.pl > 0) { s.wins++; s.gw += x.pl; cw++; cl = 0; }
+      else if (x.pl < 0) { s.losses++; s.gl += -x.pl; cl++; cw = 0; }
+      else { cw = 0; cl = 0; }
+      if (cw > ws) ws = cw;
+      if (cl > ls) ls = cl;
+      if (x.fees) s.fees += x.fees;
+      if (!s.best || x.pl > s.best.pl) s.best = x;
+      if (!s.worst || x.pl < s.worst.pl) s.worst = x;
+      run = r2(run + x.pl);
+      if (run > s.peak) s.peak = run;
+      if (s.peak - run > s.dd) s.dd = s.peak - run;
+    });
+    s.gw = r2(s.gw); s.gl = r2(s.gl); s.net = r2(s.gw - s.gl);
+    s.wr = s.n ? s.wins / s.n * 100 : 0;
+    s.avgW = s.wins ? s.gw / s.wins : 0;
+    s.avgL = s.losses ? s.gl / s.losses : 0;
+    s.pf = s.gl > 0 ? s.gw / s.gl : (s.gw > 0 ? Infinity : 0);
+    s.maxWin = ws; s.maxLoss = ls;
+    s.cur = cw > 0 ? { type: 'win', n: cw } : cl > 0 ? { type: 'loss', n: cl } : null;
+    var days = dailyTotals(list);
+    s.days = days.length;
+    s.green = days.filter(function (d) { return d.pl > 0; }).length;
+    s.red = days.filter(function (d) { return d.pl < 0; }).length;
+    s.bestDay = null; s.worstDay = null;
+    days.forEach(function (d) {
+      if (!s.bestDay || d.pl > s.bestDay.pl) s.bestDay = d;
+      if (!s.worstDay || d.pl < s.worstDay.pl) s.worstDay = d;
+    });
+    s.avgDay = days.length ? r2(s.net / days.length) : null;
+    return s;
+  }
+
+  function fmtPF(s) { return !s.n ? '-' : s.pf === Infinity ? 'No loss' : s.pf.toFixed(2); }
+
+  function renderHighlights() {
+    var st = computeStats(state.trades, state.start);
+    var now = new Date(), tk = dayKey(now.getTime()), todayPl = 0, todayN = 0, monPl = 0, monN = 0;
+    state.trades.forEach(function (tr) {
+      if (!tr.t) return;
+      var d = new Date(tr.t);
+      if (dayKey(tr.t) === tk) { todayPl = r2(todayPl + tr.pl); todayN++; }
+      if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) { monPl = r2(monPl + tr.pl); monN++; }
+    });
+    var box = $('hl'); box.textContent = '';
+    box.appendChild(tile('stat', 'Today', signed(todayPl), todayPl > 0 ? 'pos' : todayPl < 0 ? 'neg' : '', todayN + (todayN === 1 ? ' trade' : ' trades')));
+    box.appendChild(tile('stat', 'Streak', st.cur ? st.cur.n + (st.cur.type === 'win' ? ' wins' : ' losses') : '-', st.cur ? (st.cur.type === 'win' ? 'pos' : 'neg') : '', 'In a row'));
+    box.appendChild(tile('stat', 'This month', signed(monPl), monPl > 0 ? 'pos' : monPl < 0 ? 'neg' : '', monN + (monN === 1 ? ' trade' : ' trades')));
+    box.appendChild(tile('stat', 'Biggest win', st.best && st.best.pl > 0 ? signed(st.best.pl) : '-', st.best && st.best.pl > 0 ? 'pos' : '', st.best && st.best.t ? fmtDMY(st.best.t) : 'Single trade'));
+    box.appendChild(tile('stat', 'Best day', st.bestDay && st.bestDay.pl > 0 ? signed(st.bestDay.pl) : '-', st.bestDay && st.bestDay.pl > 0 ? 'pos' : '', st.bestDay ? fmtDMY(st.bestDay.t) : 'Needs dated trades'));
+    box.appendChild(tile('stat', 'Worst day', st.worstDay && st.worstDay.pl < 0 ? signed(st.worstDay.pl) : '-', st.worstDay && st.worstDay.pl < 0 ? 'neg' : '', st.worstDay ? fmtDMY(st.worstDay.t) : 'Needs dated trades'));
+  }
+
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+  function scores(st) {
+    var out = [];
+    var hasN = st.n > 0;
+    out.push({ name: 'Win rate', val: hasN ? clamp(st.wr / 60 * 100) : null, raw: hasN ? st.wr.toFixed(0) + '% of trades won' : 'No trades yet' });
+    var payoff = st.avgL > 0 ? st.avgW / st.avgL : (st.avgW > 0 ? Infinity : 0);
+    out.push({ name: 'Risk/reward', val: hasN ? (payoff === Infinity ? 100 : clamp(payoff / 2 * 100)) : null, raw: !hasN ? 'No trades yet' : payoff === Infinity ? 'No losing trades yet' : 'Avg win is ' + payoff.toFixed(2) + 'x avg loss' });
+    out.push({ name: 'Consistency', val: st.days ? clamp(st.green / st.days * 100) : null, raw: st.days ? st.green + ' green days of ' + st.days : 'Needs dated trades' });
+    out.push({ name: 'Profitability', val: hasN ? (st.pf === Infinity ? 100 : clamp(st.pf / 2 * 100)) : null, raw: hasN ? 'Profit factor ' + fmtPF(st) : 'No trades yet' });
+    var rec = null, recRaw = 'No trades yet';
+    if (hasN) {
+      if (st.net <= 0) { rec = 0; recRaw = 'Not in net profit yet'; }
+      else if (st.dd <= 0) { rec = 100; recRaw = 'No drawdown yet'; }
+      else { rec = clamp(st.net / st.dd / 3 * 100); recRaw = 'Net profit is ' + (st.net / st.dd).toFixed(1) + 'x max drawdown'; }
+    }
+    out.push({ name: 'Recovery', val: rec, raw: recRaw });
+    var ddPct = st.peak > 0 ? st.dd / st.peak * 100 : 0;
+    out.push({ name: 'Drawdown', val: hasN ? clamp(100 - ddPct * 5) : null, raw: hasN ? 'Max drawdown ' + ddPct.toFixed(1) + '% of peak' : 'No trades yet' });
+    return out;
+  }
+
+  function drawRadar(items) {
+    var cx = 160, cy = 118, R = 78, n = items.length, i;
+    function ang(k) { return -Math.PI / 2 + k * 2 * Math.PI / n; }
+    function pt(k, r) { var a = ang(k); return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+    function f(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }
+    var s = '<svg viewBox="0 0 320 240" role="img" aria-label="Trade score radar chart" xmlns="http://www.w3.org/2000/svg">';
+    [33, 66, 100].forEach(function (pc) {
+      var pts = []; for (i = 0; i < n; i++) pts.push(f(pt(i, R * pc / 100)));
+      s += '<polygon points="' + pts.join(' ') + '" style="fill:none;stroke:var(--line)" stroke-width="1"/>';
+    });
+    for (i = 0; i < n; i++) { var e = pt(i, R); s += '<line x1="' + cx + '" y1="' + cy + '" x2="' + e[0].toFixed(1) + '" y2="' + e[1].toFixed(1) + '" style="stroke:var(--line)" stroke-width="1"/>'; }
+    var dp = []; for (i = 0; i < n; i++) dp.push(f(pt(i, R * (items[i].val === null ? 0 : items[i].val) / 100)));
+    s += '<polygon points="' + dp.join(' ') + '" style="fill:var(--accent);fill-opacity:0.22;stroke:var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
+    for (i = 0; i < n; i++) {
+      var q = pt(i, R * (items[i].val === null ? 0 : items[i].val) / 100);
+      s += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="3.5" style="fill:var(--accent);stroke:var(--surface)" stroke-width="2"/>';
+      var lp = pt(i, R + 14), c = Math.cos(ang(i)), sn = Math.sin(ang(i));
+      s += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + (sn > 0.5 ? 10 : sn < -0.5 ? 0 : 4)).toFixed(1) + '" text-anchor="' + (c > 0.3 ? 'start' : c < -0.3 ? 'end' : 'middle') + '" font-size="11" style="fill:var(--ink-2)">' + items[i].name + '</text>';
+    }
+    return s + '</svg>';
+  }
+
+  function renderPerf() {
+    var st = computeStats(state.trades, state.start);
+    var items = scores(st);
+    var vals = items.filter(function (x) { return x.val !== null; });
+    var total = vals.length ? Math.round(vals.reduce(function (a, x) { return a + x.val; }, 0) / vals.length) : null;
+    $('score').textContent = total === null ? '-' : String(total);
+    $('score').className = 'score ' + (total === null ? '' : total >= 60 ? 'pos' : total < 40 ? 'neg' : '');
+    $('scoresub').textContent = total === null ? 'Add trades to see your score' : (total >= 80 ? 'Strong' : total >= 60 ? 'Solid' : total >= 40 ? 'Developing' : 'Needs work') + ' · based on ' + st.n + (st.n === 1 ? ' trade' : ' trades');
+    $('radar').innerHTML = drawRadar(items);
+    var box = $('pmetrics'); box.textContent = '';
+    items.forEach(function (it) {
+      var row = document.createElement('div'); row.className = 'brow';
+      var hd = document.createElement('div'); hd.className = 'bhead';
+      var nm = document.createElement('span'); nm.className = 'bname'; nm.textContent = it.name;
+      var vl = document.createElement('span'); vl.className = 'bval'; vl.textContent = it.val === null ? '-' : String(Math.round(it.val));
+      hd.appendChild(nm); hd.appendChild(vl);
+      var mt = document.createElement('div'); mt.className = 'bmeta'; mt.textContent = it.raw;
+      var bar = document.createElement('div'); bar.className = 'bbar';
+      var fill = document.createElement('i'); fill.style.width = (it.val === null ? 0 : Math.max(3, it.val)).toFixed(0) + '%'; fill.style.background = 'var(--accent)';
+      bar.appendChild(fill);
+      row.appendChild(hd); row.appendChild(mt); row.appendChild(bar); box.appendChild(row);
+    });
+    $('scorenote').textContent = (st.n < 20 && st.n > 0 ? 'Early numbers: 20 or more trades make the score more reliable. ' : '') + 'Each spoke is 0 to 100. Win rate 60% = 100. Risk/reward 2:1 = 100. Profit factor 2 = 100. Recovery 3x = 100. Drawdown 20% of peak = 0.';
+
+    var act = $('pact'); act.textContent = '';
+    act.appendChild(tile('kpi', 'Days traded', String(st.days), ''));
+    act.appendChild(tile('kpi', 'Avg P&L per day', st.avgDay === null ? '-' : signed(st.avgDay), st.avgDay > 0 ? 'pos' : st.avgDay < 0 ? 'neg' : ''));
+    act.appendChild(tile('kpi', 'Green days', String(st.green), st.green ? 'pos' : ''));
+    act.appendChild(tile('kpi', 'Red days', String(st.red), st.red ? 'neg' : ''));
+    act.appendChild(tile('kpi', 'Longest win streak', String(st.maxWin), ''));
+    act.appendChild(tile('kpi', 'Longest loss streak', String(st.maxLoss), ''));
+    act.appendChild(tile('kpi', 'Best day', st.bestDay && st.bestDay.pl > 0 ? signed(st.bestDay.pl) : '-', st.bestDay && st.bestDay.pl > 0 ? 'pos' : '', st.bestDay ? fmtDMY(st.bestDay.t) : ''));
+    act.appendChild(tile('kpi', 'Worst day', st.worstDay && st.worstDay.pl < 0 ? signed(st.worstDay.pl) : '-', st.worstDay && st.worstDay.pl < 0 ? 'neg' : '', st.worstDay ? fmtDMY(st.worstDay.t) : ''));
+    var dw = $('dwr'); dw.textContent = '';
+    if (st.days) {
+      var pc = Math.round(st.green / st.days * 100);
+      var hd = document.createElement('div'); hd.className = 'bhead';
+      var a = document.createElement('span'); a.className = 'bname'; a.textContent = 'Daily win rate';
+      var b = document.createElement('span'); b.className = 'bval'; b.textContent = pc + '%';
+      hd.appendChild(a); hd.appendChild(b);
+      var bar = document.createElement('div'); bar.className = 'bbar'; bar.style.height = '8px'; bar.style.background = 'var(--loss)';
+      var fill = document.createElement('i'); fill.style.width = pc + '%'; fill.style.background = 'var(--profit)';
+      bar.appendChild(fill);
+      dw.appendChild(hd); dw.appendChild(bar);
+    }
+  }
+
+  function rptRange(p) {
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth(), d = now.getDate(), dow = now.getDay();
+    if (p === 'week') return { label: 'This week', from: new Date(y, m, d - ((dow + 6) % 7)).getTime(), to: now.getTime() };
+    if (p === 'month') return { label: 'This month', from: new Date(y, m, 1).getTime(), to: now.getTime() };
+    if (p === 'last') return { label: 'Last month', from: new Date(y, m - 1, 1).getTime(), to: new Date(y, m, 0, 23, 59, 59).getTime() };
+    return { label: 'All time', from: null, to: null };
+  }
+
+  function rptTrades(p) {
+    var r = rptRange(p);
+    if (r.from === null) return state.trades.slice();
+    return state.trades.filter(function (x) { return x.t && x.t >= r.from && x.t <= r.to; });
+  }
+
+  function groupNet(list, keyFn) {
+    var g = {}, keys = [];
+    list.forEach(function (x) { var k = keyFn(x); if (!k) return; if (g[k] === undefined) { g[k] = 0; keys.push(k); } g[k] = r2(g[k] + x.pl); });
+    if (!keys.length) return null;
+    var best = keys[0], worst = keys[0];
+    keys.forEach(function (k) { if (g[k] > g[best]) best = k; if (g[k] < g[worst]) worst = k; });
+    return { best: best, bestPl: g[best], worst: worst, worstPl: g[worst], count: keys.length };
+  }
+
+  function rptLines(list, st) {
+    var lines = [];
+    function add(word, key, fn) {
+      var r = groupNet(list, fn);
+      if (!r) return;
+      lines.push('Best ' + word + ': ' + r.best + ' (' + signed(r.bestPl) + ')');
+      if (r.count > 1 && r.worstPl < 0) lines.push('Weakest ' + word + ': ' + r.worst + ' (' + signed(r.worstPl) + ')');
+    }
+    add('session', 'session', function (x) { return x.session; });
+    add('logic', 'tag', function (x) { return x.tag; });
+    add('day', 'day', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; });
+    if (st.days) lines.push('Traded ' + st.days + (st.days === 1 ? ' day: ' : ' days: ') + st.green + ' green, ' + st.red + ' red');
+    if (st.n) lines.push('Longest win streak ' + st.maxWin + ', longest loss streak ' + st.maxLoss);
+    return lines;
+  }
+
+  function rptText(p) {
+    var r = rptRange(p), list = rptTrades(p), st = computeStats(list, 0);
+    var rng = r.from === null ? 'All trades' : fmtDMY(r.from) + ' to ' + fmtDMY(r.to);
+    var out = ['The College Trader report: ' + r.label, rng, ''];
+    if (!st.n) return out.concat(['No trades in this period.']).join('\n');
+    out.push('Net P&L: ' + signed(st.net), 'Trades: ' + st.n + ' (' + st.wins + ' wins, ' + st.losses + ' losses)', 'Win rate: ' + st.wr.toFixed(0) + '%', 'Profit factor: ' + fmtPF(st),
+      'Avg win: ' + signed(r2(st.avgW)) + ', avg loss: ' + signed(-r2(st.avgL)), 'Best trade: ' + signed(st.best.pl) + ', worst trade: ' + signed(st.worst.pl), 'Fees: $' + st.fees.toFixed(2), '');
+    return out.concat(rptLines(list, st)).join('\n');
+  }
+
+  function renderReport() {
+    ['week', 'month', 'last', 'all'].forEach(function (k) { $('rp-' + k).className = k === rptPeriod ? 'sel' : ''; });
+    var r = rptRange(rptPeriod), list = rptTrades(rptPeriod), st = computeStats(list, 0);
+    $('rtitle').textContent = r.label;
+    $('rrange').textContent = r.from === null ? 'All your trades' : fmtDMY(r.from) + ' to ' + fmtDMY(r.to);
+    var box = $('rkpis'); box.textContent = '';
+    var ul = $('rlines'); ul.textContent = '';
+    if (!st.n) {
+      var e = document.createElement('li'); e.textContent = 'No trades in this period.'; ul.appendChild(e);
+      return;
+    }
+    box.appendChild(tile('kpi', 'Net P&L', signed(st.net), st.net >= 0 ? 'pos' : 'neg'));
+    box.appendChild(tile('kpi', 'Trades', String(st.n), '', st.wins + 'W ' + st.losses + 'L'));
+    box.appendChild(tile('kpi', 'Win rate', st.wr.toFixed(0) + '%', ''));
+    box.appendChild(tile('kpi', 'Profit factor', fmtPF(st), ''));
+    box.appendChild(tile('kpi', 'Avg win', st.wins ? signed(r2(st.avgW)) : '-', st.wins ? 'pos' : ''));
+    box.appendChild(tile('kpi', 'Avg loss', st.losses ? signed(-r2(st.avgL)) : '-', st.losses ? 'neg' : ''));
+    box.appendChild(tile('kpi', 'Best trade', signed(st.best.pl), st.best.pl >= 0 ? 'pos' : 'neg'));
+    box.appendChild(tile('kpi', 'Worst trade', signed(st.worst.pl), st.worst.pl >= 0 ? 'pos' : 'neg'));
+    rptLines(list, st).forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+  }
+
+  function rcopy() {
+    var txt = rptText(rptPeriod);
+    var ok = function () { $('rmsg').textContent = 'Summary copied.'; };
+    var fail = function () { $('rmsg').textContent = 'Could not copy on this device.'; };
+    try { navigator.clipboard.writeText(txt).then(ok, fail); } catch (e) { fail(); }
+  }
+
+  function rcsv() {
+    var list = rptTrades(rptPeriod);
+    if (!list.length) { $('rmsg').textContent = 'No trades in this period to export.'; return; }
+    saveFile('college-trader-' + rptPeriod + '-' + stamp() + '.csv', buildCsv(list), 'text/csv;charset=utf-8');
+    $('rmsg').textContent = 'CSV downloaded (' + list.length + ' trades).';
+  }
+
   function renderDashboard() {
     var t = state.trades, n = t.length, i;
     var bal = balances();
@@ -525,6 +888,7 @@ select { font: inherit; }
     breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Choose a Session when adding a trade and it will show here.');
     breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Choose a Logic tag when adding a trade and it will show here.');
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
+    breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
   function breakdown(id, keyFn, order, emptyMsg) {
@@ -605,6 +969,102 @@ select { font: inherit; }
     sum.appendChild(document.createTextNode('Month: '));
     var mt = document.createElement('b'); mt.className = tot >= 0 ? 'pos' : 'neg'; mt.textContent = signed(tot); sum.appendChild(mt);
     sum.appendChild(document.createTextNode(' \u00b7 ' + wins + ' profit days \u00b7 ' + losses + ' loss days'));
+  }
+
+  function csvCell(v, text) {
+    var s = v === undefined || v === null ? '' : String(v);
+    if (text && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function buildCsv(list) {
+    var rows = [['Date', 'Direction', 'Entry', 'Exit', 'Lot size', 'Session', 'Logic tag', 'Logic note', 'P&L ($)', 'Fees ($)', 'Result']];
+    (list || state.trades).forEach(function (tr) {
+      rows.push([
+        csvCell(tr.t ? fmtDMY(tr.t) : ''), csvCell(tr.dir, true), csvCell(tr.entry), csvCell(tr.exit), csvCell(tr.lots),
+        csvCell(tr.session, true), csvCell(tr.tag, true), csvCell(tr.logic || tr.note, true),
+        csvCell(tr.pl), csvCell(tr.fees), csvCell(tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE'))
+      ]);
+    });
+    return '\uFEFF' + rows.map(function (r) { return r.join(','); }).join('\r\n');
+  }
+
+  function stamp() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+  function saveFile(name, text, type) {
+    var blob = new Blob([text], { type: type });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+  }
+
+  function dmsg(t) { $('dmsg').textContent = t; }
+
+  function exportCsv() {
+    if (isExample || !state.trades.length) { dmsg('Nothing to export yet. Add your first trade.'); return; }
+    saveFile('college-trader-journal-' + stamp() + '.csv', buildCsv(), 'text/csv;charset=utf-8');
+    dmsg('CSV downloaded (' + state.trades.length + ' trades).');
+  }
+
+  function exportBackup() {
+    if (isExample || (!state.trades.length && !(state.notes || []).length)) { dmsg('Nothing to back up yet.'); return; }
+    var data = { app: 'college-trader', version: 1, exported: new Date().toISOString(), data: { start: state.start, target: state.target, contract: contractSize(), trades: state.trades, notes: state.notes || [] } };
+    saveFile('college-trader-backup-' + stamp() + '.json', JSON.stringify(data), 'application/json');
+    dmsg('Backup downloaded. Keep it somewhere safe.');
+  }
+
+  function cleanBackup(obj) {
+    var d = obj && obj.data ? obj.data : obj;
+    if (!d || !Array.isArray(d.trades)) return null;
+    function num(v) { v = Number(v); return isFinite(v) ? v : null; }
+    function str(v, n) { return typeof v === 'string' ? v.slice(0, n) : ''; }
+    var trades = [];
+    d.trades.slice(0, 5000).forEach(function (x, i) {
+      var pl = x ? num(x.pl) : null;
+      if (pl === null) return;
+      var o = { id: str(x.id, 40) || 'r' + i, pl: r2(pl) };
+      var t = num(x.t); if (t !== null && t > 0) o.t = t;
+      if (x.dir === 'Buy' || x.dir === 'Sell') o.dir = x.dir;
+      ['entry', 'exit', 'lots', 'fees'].forEach(function (k) { var v = num(x[k]); if (v !== null && x[k] !== '' && x[k] !== null) o[k] = v; });
+      ['session', 'tag'].forEach(function (k) { var v = str(x[k], 40); if (v) o[k] = v; });
+      var lg = str(x.logic, 300); if (lg) o.logic = lg;
+      var nt = str(x.note, 300); if (nt && !lg) o.note = nt;
+      o.res = pl > 0 ? 'Win' : pl < 0 ? 'Loss' : 'BE';
+      trades.push(o);
+    });
+    trades.sort(function (a, b) { return (a.t || 0) - (b.t || 0); });
+    var notes = [];
+    (Array.isArray(d.notes) ? d.notes : []).slice(0, 5000).forEach(function (x, i) {
+      var t = x ? num(x.t) : null, tx = x ? str(x.text, 240) : '';
+      if (t === null || !tx) return;
+      notes.push({ id: str(x.id, 40) || 'n' + i, t: t, text: tx });
+    });
+    var s = num(d.start), tg = num(d.target), ct = num(d.contract);
+    return { start: s > 0 ? s : 125, target: tg > 0 ? tg : 130, contract: ct > 0 ? ct : 100, trades: trades, notes: notes };
+  }
+
+  var pendingImport = null;
+
+  function onImportFile() {
+    var f = $('impfile').files && $('impfile').files[0];
+    if (!f) return;
+    if (f.size > 5000000) { dmsg('That file is too large to be a backup.'); $('impfile').value = ''; return; }
+    var rd = new FileReader();
+    rd.onload = function () {
+      var obj = null;
+      try { obj = JSON.parse(String(rd.result)); } catch (e) { obj = null; }
+      var clean = obj ? cleanBackup(obj) : null;
+      $('impfile').value = '';
+      if (!clean) { dmsg('That file is not a College Trader backup.'); return; }
+      pendingImport = clean;
+      $('imptext').textContent = 'Restore ' + clean.trades.length + ' trades and ' + clean.notes.length + ' notes? This replaces what is saved on this phone now.';
+      $('impconfirm').hidden = false; $('impbtn').hidden = true; dmsg('');
+    };
+    rd.onerror = function () { dmsg('Could not read that file.'); };
+    rd.readAsText(f);
   }
 
   function dayKey(ts) { var d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
@@ -832,6 +1292,21 @@ select { font: inherit; }
   $('amt').addEventListener('input', function () { $('err').textContent = ''; });
   $('calprev').onclick = function () { calMonth.m--; if (calMonth.m < 0) { calMonth.m = 11; calMonth.y--; } renderCalendar(); };
   $('calnext').onclick = function () { calMonth.m++; if (calMonth.m > 11) { calMonth.m = 0; calMonth.y++; } renderCalendar(); };
+  TABS.forEach(function (t) { $('tab-' + t).onclick = function () { showTab(t); }; });
+  ['week', 'month', 'last', 'all'].forEach(function (k) { $('rp-' + k).onclick = function () { rptPeriod = k; $('rmsg').textContent = ''; renderReport(); }; });
+  $('rcopy').onclick = rcopy;
+  $('rcsv').onclick = rcsv;
+  $('expcsv').onclick = exportCsv;
+  $('expjson').onclick = exportBackup;
+  $('impbtn').onclick = function () { $('impfile').click(); };
+  $('impfile').addEventListener('change', onImportFile);
+  $('impno').onclick = function () { pendingImport = null; $('impconfirm').hidden = true; $('impbtn').hidden = false; };
+  $('impyes').onclick = function () {
+    if (!pendingImport) return;
+    state = pendingImport; pendingImport = null; isExample = false;
+    $('impconfirm').hidden = true; $('impbtn').hidden = false;
+    persist(); render(); dmsg('Backup restored.');
+  };
   $('nadd').onclick = addNote;
   $('nin').addEventListener('input', function () { $('nerr').textContent = ''; });
   $('resetbtn').onclick = function () { $('resetbtn').hidden = true; $('resetconfirm').hidden = false; };
