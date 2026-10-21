@@ -219,7 +219,7 @@ select { font: inherit; }
 
   <section class="card" aria-label="Add a trade">
     <div class="label">Add trade</div>
-    <div id="banner" class="note-banner" style="margin-top:10px" hidden>Ye 8 trades examples hain. Pehla asli trade ya note add karte hi ye hat jayenge.</div>
+    <div id="banner" class="note-banner" style="margin-top:10px" hidden>These 8 trades are examples. Add your first real trade or note and they will be removed.</div>
     <div class="form">
       <div class="field">
         <label class="tmeta" for="tdate">Date</label>
@@ -242,7 +242,7 @@ select { font: inherit; }
         <div class="field">
           <label class="tmeta" for="sess">Session</label>
           <select id="sess">
-            <option value="">Chuno</option>
+            <option value="">Select</option>
             <option value="Asian">Asian</option>
             <option value="London">London</option>
             <option value="NY">NY</option>
@@ -257,7 +257,7 @@ select { font: inherit; }
       <div class="field">
         <label class="tmeta" for="ltag">Logic</label>
         <select id="ltag">
-          <option value="">Tag chuno</option>
+          <option value="">Select tag</option>
           <option value="Liquidity sweep">Liquidity sweep</option>
           <option value="OB">OB</option>
           <option value="FVG">FVG</option>
@@ -273,7 +273,7 @@ select { font: inherit; }
       <button type="button" class="b-accent" id="saveauto">Save trade</button>
       <hr class="hr">
       <div class="field">
-        <label class="tmeta" for="amt">Ya seedha P&amp;L likho (fees ke baad, dollars, bina sign)</label>
+        <label class="tmeta" for="amt">Or enter P&amp;L directly (after fees, in dollars, no sign)</label>
         <input id="amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="1.50">
       </div>
       <div class="btns">
@@ -284,12 +284,12 @@ select { font: inherit; }
   </section>
 
   <section class="card" aria-label="Daily notes">
-    <div class="nhead"><div class="label">Aaj ke notes</div><div class="ncount" id="ncount">0/5</div></div>
+    <div class="nhead"><div class="label">Today's notes</div><div class="ncount" id="ncount">0/5</div></div>
     <ul class="nlist" id="ntoday"></ul>
     <div class="form">
       <div class="field">
-        <label class="tmeta" for="nin">Naya note</label>
-        <textarea id="nin" rows="2" maxlength="240" placeholder="Aaj ka bias aur setup"></textarea>
+        <label class="tmeta" for="nin">New note</label>
+        <textarea id="nin" rows="2" maxlength="240" placeholder="Today's bias and setup"></textarea>
       </div>
       <p class="err" id="nerr" role="alert"></p>
       <button type="button" class="b-accent" id="nadd">Add note</button>
@@ -300,9 +300,9 @@ select { font: inherit; }
   <section class="card" aria-label="Calendar">
     <div class="label">Calendar</div>
     <div class="cal-head">
-      <button type="button" class="b-ghost cal-nav" id="calprev" aria-label="Pichla mahina">&lsaquo;</button>
+      <button type="button" class="b-ghost cal-nav" id="calprev" aria-label="Previous month">&lsaquo;</button>
       <div class="cal-title" id="caltitle"></div>
-      <button type="button" class="b-ghost cal-nav" id="calnext" aria-label="Agla mahina">&rsaquo;</button>
+      <button type="button" class="b-ghost cal-nav" id="calnext" aria-label="Next month">&rsaquo;</button>
     </div>
     <div class="cal-grid" id="calgrid"></div>
     <div class="cal-sum" id="calsum"></div>
@@ -311,7 +311,7 @@ select { font: inherit; }
   <section class="card" aria-label="Daily record">
     <div class="label">Daily record</div>
     <ul class="list days" id="days"></ul>
-    <div class="empty" id="dayempty" hidden>Din ka record pehla trade ke baad yahan dikhega.</div>
+    <div class="empty" id="dayempty" hidden>Your daily record will appear here after your first trade.</div>
   </section>
 
   <section class="card" aria-label="Trade list">
@@ -330,9 +330,9 @@ select { font: inherit; }
     <div class="confirm">
       <button type="button" class="b-ghost" id="resetbtn">Reset journal</button>
       <div id="resetconfirm" hidden>
-        <p class="err" style="min-height:0;margin:0 0 8px">Saare trades aur notes delete ho jayenge. Ye wapas nahi aayega.</p>
+        <p class="err" style="min-height:0;margin:0 0 8px">All trades and notes will be deleted. This cannot be undone.</p>
         <div class="btns">
-          <button type="button" class="b-loss" id="resetyes">Haan, reset karo</button>
+          <button type="button" class="b-loss" id="resetyes">Yes, reset</button>
           <button type="button" class="b-ghost" id="resetno">Cancel</button>
         </div>
       </div>
@@ -420,7 +420,7 @@ select { font: inherit; }
     renderChart(bal);
   }
 
-  var PROMPTS = ['Aaj ka bias aur setup', 'Best trade ka reason', 'Sabse badi galti', 'Rule follow kiya ya toda?', 'Kal ke liye plan'];
+  var PROMPTS = ["Today's bias and setup", 'Best trade and why', 'Biggest mistake', 'Did I follow my rules?', "Plan for tomorrow"];
 
   function noteItem(n) {
     var li = document.createElement('li');
@@ -462,8 +462,8 @@ select { font: inherit; }
     var text = $('nin').value.trim();
     var todayKey = dayKey(Date.now());
     var count = (state.notes || []).filter(function (n) { return dayKey(n.t) === todayKey; }).length;
-    if (!text) { $('nerr').textContent = 'Pehle note likho.'; $('nin').focus(); return; }
-    if (count >= 5) { $('nerr').textContent = 'Aaj ke 5 notes ho gaye. Koi note delete karo ya kal naya din shuru karo.'; return; }
+    if (!text) { $('nerr').textContent = 'Write a note first.'; $('nin').focus(); return; }
+    if (count >= 5) { $('nerr').textContent = 'You have 5 notes for today. Delete one or add more tomorrow.'; return; }
     $('nerr').textContent = '';
     leaveExample();
     state.notes = (state.notes || []).concat([{ id: 'n' + Date.now(), t: Date.now(), text: text }]);
@@ -522,9 +522,9 @@ select { font: inherit; }
       var v = document.createElement('div'); v.className = 'v ' + it[2]; v.textContent = it[1];
       d.appendChild(l); d.appendChild(v); box.appendChild(d);
     });
-    breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Trade add karte waqt Session chuno, phir yahan dikhega.');
-    breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Trade add karte waqt Logic tag chuno, phir yahan dikhega.');
-    breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Trade add karte waqt Buy ya Sell chuno, phir yahan dikhega.');
+    breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Choose a Session when adding a trade and it will show here.');
+    breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Choose a Logic tag when adding a trade and it will show here.');
+    breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
   }
 
   function breakdown(id, keyFn, order, emptyMsg) {
@@ -595,16 +595,16 @@ select { font: inherit; }
         var vv = document.createElement('div'); vv.className = 'cal-v ' + (v >= 0 ? 'pos' : 'neg');
         vv.textContent = (v < 0 ? '-' : '+') + Math.abs(v).toFixed(2);
         c.appendChild(vv);
-        c.setAttribute('aria-label', i + ' tareekh: ' + signed(v));
+        c.setAttribute('aria-label', 'Day ' + i + ': ' + signed(v));
       }
       grid.appendChild(c);
     }
     var sum = $('calsum'); sum.textContent = '';
     var any = wins + losses > 0 || Object.keys(byDay).length > 0;
-    if (!any) { sum.textContent = 'Is mahine koi trade nahi. Trade add karte hi din yahan rang mein dikhega.'; return; }
-    sum.appendChild(document.createTextNode('Mahina: '));
+    if (!any) { sum.textContent = 'No trades this month. Days will be colored here once you add trades.'; return; }
+    sum.appendChild(document.createTextNode('Month: '));
     var mt = document.createElement('b'); mt.className = tot >= 0 ? 'pos' : 'neg'; mt.textContent = signed(tot); sum.appendChild(mt);
-    sum.appendChild(document.createTextNode(' \u00b7 ' + wins + ' profit din \u00b7 ' + losses + ' loss din'));
+    sum.appendChild(document.createTextNode(' \u00b7 ' + wins + ' profit days \u00b7 ' + losses + ' loss days'));
   }
 
   function dayKey(ts) { var d = new Date(ts); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
@@ -755,9 +755,9 @@ select { font: inherit; }
 
   function updateCalc() {
     var g = calcGross(), el = $('calc');
-    if (g === null) { el.textContent = 'Direction, entry, exit aur lots bharo, P&L khud nikal jayega.'; el.className = 'calc'; return; }
+    if (g === null) { el.textContent = 'Fill in direction, entry, exit and lots to calculate P&L automatically.'; el.className = 'calc'; return; }
     var net = r2(g - feesv());
-    el.textContent = 'P&L: ' + signed(net) + ' fees ke baad (gross ' + signed(g) + ', fees $' + feesv().toFixed(2) + ', ' + contractSize() + ' oz per lot)';
+    el.textContent = 'P&L: ' + signed(net) + ' after fees (gross ' + signed(g) + ', fees $' + feesv().toFixed(2) + ', ' + contractSize() + ' oz per lot)';
     el.className = 'calc ' + (net >= 0 ? 'pos' : 'neg');
   }
 
@@ -796,13 +796,13 @@ select { font: inherit; }
 
   function addAuto() {
     var p = calcPL();
-    if (p === null) { $('err').textContent = 'Buy ya Sell chuno aur entry, exit, lots bharo. Ya neeche seedha amount daalo.'; return; }
+    if (p === null) { $('err').textContent = 'Choose Buy or Sell and fill in entry, exit and lots, or enter an amount below.'; return; }
     saveTrade(p);
   }
 
   function addManual(sign) {
     var v = numv('amt');
-    if (v === null || v <= 0) { $('err').textContent = 'Amount 0 se zyada daalo, jaise 1.50.'; $('amt').focus(); return; }
+    if (v === null || v <= 0) { $('err').textContent = 'Enter an amount above 0, like 1.50.'; $('amt').focus(); return; }
     saveTrade(r2(sign * v));
   }
 
