@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="College Trader">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>try{var __t=localStorage.getItem("ct-theme");document.documentElement.setAttribute("data-theme",__t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
 <style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 <title>The College Trader</title>
 <style>
@@ -67,17 +68,19 @@ body {
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.5;
-  padding-block: 20px 40px;
+  padding-block: 14px 110px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
-h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
 .brand { display: flex; align-items: center; gap: 12px; }
-.logo { width: 64px; height: 64px; border-radius: 14px; flex: none; background: #000; }
+.logo { width: 44px; height: 44px; border-radius: 10px; flex: none; background: #000; }
+.hb { margin-left: auto; text-align: right; flex: none; }
+.hb .num { font-size: 16px; font-weight: 500; }
 .bt { min-width: 0; }
-.sub { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; }
+.sub { margin: 0; color: var(--ink-2); font-size: 12px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
 .label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .hero { display: flex; flex-direction: column; gap: 12px; }
@@ -162,10 +165,25 @@ select { font: inherit; }
 .bbar i { display: block; height: 100%; border-radius: 3px; }
 .bnone { font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
 [hidden] { display: none !important; }
-.tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; background: var(--bg); scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
-.tabs button { flex: none; min-height: 40px; padding: 6px 14px; border-radius: 20px; background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); font-weight: 600; font-size: 13px; white-space: nowrap; }
-.tabs button.on { background: var(--accent); color: var(--on-fill); border-color: var(--accent); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs button { background: transparent; border: 0; color: var(--ink-2); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; min-height: 52px; padding: 4px 0; border-radius: 10px; }
+.tabs svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tabs button.on { color: var(--accent); }
+.fab { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; min-height: 56px; border-radius: 50%; background: var(--accent); color: var(--on-fill); font-size: 30px; line-height: 1; padding: 0; border: 0; box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 19; }
+#splash { position: fixed; inset: 0; z-index: 100; background: #000; display: flex; align-items: center; justify-content: center; animation: splashout 0.4s ease 0.9s forwards; }
+#splash img { width: 120px; height: 120px; border-radius: 24px; }
+@keyframes splashout { to { opacity: 0; visibility: hidden; } }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.panel:not([hidden]) { animation: fadein 0.25s ease; }
+.list.tl { gap: 10px; display: flex; flex-direction: column; }
+.list.tl li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: start; background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 12px; padding: 12px; }
+.list.tl li.w { border-left-color: var(--profit); }
+.list.tl li.l { border-left-color: var(--loss); }
+.list.tl .tpl { font-size: 18px; }
+.tfoot { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+.badge.buy { background: color-mix(in srgb, var(--profit) 22%, transparent); color: var(--profit); }
+.badge.sell { background: color-mix(in srgb, var(--loss) 22%, transparent); color: var(--loss); }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -183,26 +201,19 @@ select { font: inherit; }
 .settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
 .empty { color: var(--ink-2); font-size: 14px; padding: 8px 0 2px; }
 .status { font-size: 12px; color: var(--ink-2); text-align: center; }
-@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } .panel:not([hidden]), #splash { animation: none; } #splash { display: none; } }
 </style>
 
 <div class="wrap">
   <div class="brand">
-    <img class="logo" src="logo.png" alt="The College Trader logo" width="64" height="64">
+    <img class="logo" src="logo.png" alt="The College Trader logo" width="44" height="44">
     <div class="bt">
-    <div class="label">@thecollegetrader25 &middot; Trade journal</div>
+    <div class="label">@thecollegetrader25</div>
     <h1>The College Trader</h1>
     <p class="sub" id="subtitle">XAUUSD scalps, one line per trade.</p>
     </div>
+    <div class="hb"><div class="label">Balance</div><div class="num" id="hbal">$0.00</div></div>
   </div>
-
-  <nav class="tabs" role="tablist" aria-label="Journal sections">
-    <button type="button" role="tab" id="tab-dash">Dashboard</button>
-    <button type="button" role="tab" id="tab-journal">Journal</button>
-    <button type="button" role="tab" id="tab-analytics">Analytics</button>
-    <button type="button" role="tab" id="tab-perf">Performance</button>
-    <button type="button" role="tab" id="tab-reports">Reports</button>
-  </nav>
 
   <div class="panel" id="p-dash">
   <div id="banner2" class="note-banner" hidden>Showing example trades. Open the Journal tab and add your first real trade to replace them.</div>
@@ -247,7 +258,7 @@ select { font: inherit; }
   </div>
 
   <div class="panel" id="p-journal" hidden>
-  <section class="card" aria-label="Add a trade">
+  <section class="card" aria-label="Add a trade" id="addcard">
     <div class="label">Add trade</div>
     <div id="banner" class="note-banner" style="margin-top:10px" hidden>These 8 trades are examples. Add your first real trade or note and they will be removed.</div>
     <div class="form">
@@ -335,7 +346,7 @@ select { font: inherit; }
 
   <section class="card" aria-label="Trade list">
     <div class="label">Trades, newest first</div>
-    <ul class="list" id="list"></ul>
+    <ul class="list tl" id="list"></ul>
     <div class="empty" id="empty" hidden>No trades yet. Add your first one above.</div>
   </section>
   </div>
@@ -412,6 +423,7 @@ select { font: inherit; }
 
   <section class="card" aria-label="Account settings">
     <div class="label">Account</div>
+    <button type="button" class="b-ghost" id="themebtn" style="margin-top:10px"></button>
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
@@ -433,6 +445,15 @@ select { font: inherit; }
   <div class="status" id="status"></div>
 </div>
 
+  <nav class="tabs" role="tablist" aria-label="Journal sections">
+    <button type="button" role="tab" id="tab-dash"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Home</span></button>
+    <button type="button" role="tab" id="tab-journal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>Journal</span></button>
+    <button type="button" role="tab" id="tab-analytics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg><span>Analytics</span></button>
+    <button type="button" role="tab" id="tab-perf"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><span>Score</span></button>
+    <button type="button" role="tab" id="tab-reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg><span>Reports</span></button>
+  </nav>
+  <button type="button" class="fab" id="fab" aria-label="Add trade">+</button>
+  <div id="splash" aria-hidden="true"><img src="logo.png" alt="" width="120" height="120"></div>
 <script>
 (function () {
   var EXAMPLE = {
@@ -477,6 +498,7 @@ select { font: inherit; }
     var wins = t.filter(function (x) { return x.pl > 0; }).length;
 
     $('bal').textContent = money(last);
+    $('hbal').textContent = money(last);
     $('startlbl').textContent = 'Start ' + money(state.start);
     $('targetlbl').textContent = 'Target ' + money(state.target);
     var span = state.target - state.start;
@@ -592,7 +614,7 @@ select { font: inherit; }
       $('tab-' + t).setAttribute('aria-selected', on ? 'true' : 'false');
     });
     try { localStorage.setItem('ct-tab', name); } catch (e) {}
-    try { window.scrollTo(0, 0); $('tab-' + name).scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) {}
+    try { window.scrollTo(0, 0); } catch (e) {}
   }
 
   function tile(cls, label, value, vcls, sub) {
@@ -1107,25 +1129,26 @@ select { font: inherit; }
       (function (idx) {
         var tr = t[idx];
         var li = document.createElement('li');
-        var no = document.createElement('span'); no.className = 'tno'; no.textContent = '#' + (idx + 1);
+        li.className = tr.pl > 0 ? 'w' : tr.pl < 0 ? 'l' : '';
         var main = document.createElement('div'); main.className = 'tmain';
-        var note = document.createElement('div'); note.className = 'tnote'; note.textContent = [tr.tag, tr.logic || tr.note].filter(Boolean).join(' - ') || (tr.pl >= 0 ? 'Profit' : 'Loss');
-        var meta = document.createElement('div'); meta.className = 'tmeta';
-        meta.textContent = tr.t ? fmtDMY(tr.t) : 'Example';
-        main.appendChild(note);
-        var parts = [tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE')];
-        if (tr.dir) parts.push(tr.dir);
-        if (tr.entry !== undefined && tr.exit !== undefined) parts.push(tr.entry + ' > ' + tr.exit);
+        var top = document.createElement('div');
+        if (tr.dir) { var bd = document.createElement('span'); bd.className = 'badge ' + (tr.dir === 'Buy' ? 'buy' : 'sell'); bd.textContent = tr.dir; top.appendChild(bd); }
+        var note = document.createElement('span'); note.className = 'tnote'; note.textContent = [tr.tag, tr.logic || tr.note].filter(Boolean).join(' - ') || (tr.pl >= 0 ? 'Profit' : 'Loss');
+        top.appendChild(note); main.appendChild(top);
+        var parts = [];
+        if (tr.entry !== undefined && tr.exit !== undefined) parts.push(tr.entry + ' \u2192 ' + tr.exit);
         if (tr.lots !== undefined) parts.push(tr.lots + ' lot');
         if (tr.session) parts.push(tr.session);
         if (tr.fees) parts.push('Fees $' + tr.fees);
         if (parts.length) { var det = document.createElement('div'); det.className = 'tdet'; det.textContent = parts.join(' | '); main.appendChild(det); }
-        main.appendChild(meta);
         var pl = document.createElement('span'); pl.className = 'tpl ' + (tr.pl >= 0 ? 'pos' : 'neg'); pl.textContent = signed(tr.pl);
+        var foot = document.createElement('div'); foot.className = 'tfoot';
+        var meta = document.createElement('span'); meta.className = 'tmeta'; meta.textContent = '#' + (idx + 1) + ' \u00b7 ' + (tr.t ? fmtDMY(tr.t) : 'Example') + ' \u00b7 ' + (tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE'));
         var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
         del.setAttribute('aria-label', 'Delete trade ' + (idx + 1));
         del.onclick = function () { removeTrade(idx); };
-        li.appendChild(no); li.appendChild(main); li.appendChild(pl); li.appendChild(del);
+        foot.appendChild(meta); foot.appendChild(del);
+        li.appendChild(main); li.appendChild(pl); li.appendChild(foot);
         ul.appendChild(li);
       })(i);
     }
@@ -1296,6 +1319,18 @@ select { font: inherit; }
   ['week', 'month', 'last', 'all'].forEach(function (k) { $('rp-' + k).onclick = function () { rptPeriod = k; $('rmsg').textContent = ''; renderReport(); }; });
   $('rcopy').onclick = rcopy;
   $('rcsv').onclick = rcsv;
+  $('fab').onclick = function () {
+    showTab('journal');
+    setTimeout(function () { var c = $('addcard'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+  };
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('ct-theme', t); } catch (e) {}
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', t === 'light' ? '#f1f4f2' : '#0b0f14');
+    $('themebtn').textContent = t === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
+  }
+  $('themebtn').onclick = function () { applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); };
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
   $('expcsv').onclick = exportCsv;
   $('expjson').onclick = exportBackup;
   $('impbtn').onclick = function () { $('impfile').click(); };
