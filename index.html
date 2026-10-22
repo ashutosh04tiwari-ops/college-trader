@@ -184,6 +184,20 @@ select { font: inherit; }
 .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
 .badge.buy { background: color-mix(in srgb, var(--profit) 22%, transparent); color: var(--profit); }
 .badge.sell { background: color-mix(in srgb, var(--loss) 22%, transparent); color: var(--loss); }
+.warn { background: color-mix(in srgb, var(--loss) 16%, transparent); border: 1px solid var(--loss); color: var(--ink); }
+.alert { border-radius: 10px; padding: 12px 14px; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+.alert.info { background: var(--accent-soft); border: 1px solid var(--line); }
+.alert .btns { margin-top: 2px; }
+.chk { display: flex; flex-direction: column; gap: 6px; }
+.chk label { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 36px; }
+.chk input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.thumb { display: block; max-width: 100%; max-height: 110px; border-radius: 8px; margin-top: 8px; border: 1px solid var(--line); cursor: zoom-in; }
+.acts { display: flex; gap: 6px; }
+#viewer { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; padding: 12px; }
+#viewer img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+#lock { position: fixed; inset: 0; z-index: 150; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+#lock img { width: 80px; height: 80px; border-radius: 18px; }
+#pinentry { width: 190px; text-align: center; font-size: 28px; letter-spacing: 0.4em; font-family: var(--font-num); }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -216,6 +230,7 @@ select { font: inherit; }
   </div>
 
   <div class="panel" id="p-dash">
+  <div id="alerts" style="display:flex;flex-direction:column;gap:12px"></div>
   <div id="banner2" class="note-banner" hidden>Showing example trades. Open the Journal tab and add your first real trade to replace them.</div>
   <section class="card hero" aria-label="Account balance and progress to target">
     <div>
@@ -224,6 +239,12 @@ select { font: inherit; }
     </div>
     <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><i id="barfill"></i></div>
     <div class="row"><span id="startlbl">Start $125.00</span><span id="targetlbl">Target $130.00</span></div>
+  </section>
+
+  <section class="card" id="goalcard" aria-label="Monthly goal" hidden>
+    <div class="row"><span class="label">Monthly goal</span><span class="num" id="goaltxt"></span></div>
+    <div class="bar" style="margin-top:10px"><i id="goalfill"></i></div>
+    <div class="tmeta" id="goalsub" style="margin-top:6px"></div>
   </section>
 
   <section class="stats" aria-label="Summary">
@@ -295,6 +316,23 @@ select { font: inherit; }
           <input id="fees" type="number" inputmode="decimal" step="any" min="0" placeholder="0.50">
         </div>
       </div>
+      <div class="row2">
+        <div class="field"><label class="tmeta" for="sl">Stop loss (price)</label><input id="sl" type="number" inputmode="decimal" step="any" placeholder="2648.00"></div>
+        <div class="field">
+          <label class="tmeta" for="mist">Mistake</label>
+          <select id="mist">
+            <option value="">None</option>
+            <option value="FOMO">FOMO</option>
+            <option value="Early exit">Early exit</option>
+            <option value="No SL">No SL</option>
+            <option value="Moved SL">Moved SL</option>
+            <option value="Overtrade">Overtrade</option>
+            <option value="Revenge trade">Revenge trade</option>
+            <option value="Oversized">Oversized</option>
+            <option value="News trade">News trade</option>
+          </select>
+        </div>
+      </div>
       <div class="field">
         <label class="tmeta" for="ltag">Logic</label>
         <select id="ltag">
@@ -309,9 +347,27 @@ select { font: inherit; }
         <label class="tmeta" for="logic">1 line note</label>
         <input id="logic" type="text" maxlength="120" placeholder="London open sweep, 15m OB retest">
       </div>
+      <div class="field">
+        <span class="tmeta">Pre-trade checklist</span>
+        <div class="chk" id="chkbox">
+          <label><input type="checkbox" id="chk0">Trend / HTF bias aligned</label>
+          <label><input type="checkbox" id="chk1">Liquidity swept</label>
+          <label><input type="checkbox" id="chk2">Good session (London / NY)</label>
+          <label><input type="checkbox" id="chk3">Stop loss set</label>
+          <label><input type="checkbox" id="chk4">Risk within plan</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="tmeta" for="shot">Chart screenshot (optional)</label>
+        <input id="shot" type="file" accept="image/*">
+        <img class="thumb" id="shotprev" alt="Screenshot preview" hidden>
+        <button type="button" class="b-ghost" id="shotrm" hidden>Remove screenshot</button>
+      </div>
       <p class="calc" id="calc"></p>
+      <p class="err" id="limitmsg" role="status"></p>
       <p class="err" id="err" role="alert"></p>
       <button type="button" class="b-accent" id="saveauto">Save trade</button>
+      <button type="button" class="b-ghost" id="editcancel" hidden>Cancel editing</button>
       <hr class="hr">
       <div class="field">
         <label class="tmeta" for="amt">Or enter P&amp;L directly (after fees, in dollars, no sign)</label>
@@ -322,6 +378,27 @@ select { font: inherit; }
         <button type="button" class="b-loss" id="addl">Loss &minus;</button>
       </div>
     </div>
+  </section>
+
+  <section class="card" aria-label="Deposits and withdrawals" id="cashcard">
+    <div class="label">Deposits &amp; withdrawals</div>
+    <p class="sub" style="margin-top:6px">Money you add or take out. It changes your balance but not your trading P&amp;L, win rate or drawdown.</p>
+    <div class="form">
+      <div class="seg">
+        <button type="button" id="cdep" class="sel">Deposit</button>
+        <button type="button" id="cwd">Withdrawal</button>
+      </div>
+      <div class="row2">
+        <div class="field"><label class="tmeta" for="cdate">Date</label><input id="cdate" type="date"></div>
+        <div class="field"><label class="tmeta" for="camt">Amount ($)</label><input id="camt" type="number" inputmode="decimal" step="any" min="0" placeholder="50"></div>
+      </div>
+      <div class="field"><label class="tmeta" for="cnote">Note (optional)</label><input id="cnote" type="text" maxlength="80" placeholder="Top-up from savings"></div>
+      <p class="err" id="cerr" role="alert"></p>
+      <button type="button" class="b-accent" id="cadd">Add entry</button>
+    </div>
+    <div class="tmeta" id="csum" style="margin-top:12px"></div>
+    <ul class="list days" id="clist"></ul>
+    <div class="empty" id="cempty">No deposits or withdrawals yet.</div>
   </section>
 
   <section class="card" aria-label="Daily notes">
@@ -359,6 +436,8 @@ select { font: inherit; }
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
     <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
     <div class="bsec"><div class="label">Day of week</div><div id="bweek"></div></div>
+    <div class="bsec"><div class="label">Mistakes (what they cost)</div><div id="bmist"></div></div>
+    <div class="bsec"><div class="label">Checklist discipline</div><div id="bchk"></div></div>
   </section>
   </div>
 
@@ -428,11 +507,23 @@ select { font: inherit; }
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="contract">Oz per lot (gold = 100)</label><input id="contract" type="number" inputmode="decimal" step="any" min="0"></div>
+      <div class="field"><label class="tmeta" for="dll">Daily loss limit ($, 0 = off)</label><input id="dll" type="number" inputmode="decimal" step="any" min="0"></div>
+      <div class="field"><label class="tmeta" for="mgoal">Monthly goal ($, 0 = off)</label><input id="mgoal" type="number" inputmode="decimal" step="any" min="0"></div>
+    </div>
+    <div class="confirm">
+      <div class="label">PIN lock</div>
+      <p class="sub" style="margin:4px 0 8px">A 4-digit PIN keeps casual snoopers out. It is a convenience lock, not encryption, so keep your backup too.</p>
+      <div class="row2">
+        <input id="pinin" type="password" inputmode="numeric" maxlength="4" placeholder="4 digits" autocomplete="off">
+        <button type="button" class="b-accent" id="pinset">Set PIN</button>
+      </div>
+      <button type="button" class="b-ghost" id="pinoff" style="margin-top:8px" hidden>Remove PIN</button>
+      <p class="calc" id="pinmsg" role="status"></p>
     </div>
     <div class="confirm">
       <button type="button" class="b-ghost" id="resetbtn">Reset journal</button>
       <div id="resetconfirm" hidden>
-        <p class="err" style="min-height:0;margin:0 0 8px">All trades and notes will be deleted. This cannot be undone.</p>
+        <p class="err" style="min-height:0;margin:0 0 8px">All trades, notes and deposit/withdrawal entries will be deleted. This cannot be undone.</p>
         <div class="btns">
           <button type="button" class="b-loss" id="resetyes">Yes, reset</button>
           <button type="button" class="b-ghost" id="resetno">Cancel</button>
@@ -453,11 +544,23 @@ select { font: inherit; }
     <button type="button" role="tab" id="tab-reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg><span>Reports</span></button>
   </nav>
   <button type="button" class="fab" id="fab" aria-label="Add trade">+</button>
+  <div id="viewer" hidden><img id="viewerimg" alt="Chart screenshot"></div>
+  <div id="lock" hidden>
+    <img src="logo.png" alt="" width="80" height="80">
+    <div style="font-weight:600;font-size:18px">Enter PIN</div>
+    <input id="pinentry" type="password" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="PIN">
+    <p class="err" id="lockmsg" role="alert"></p>
+    <button type="button" class="b-ghost" id="forgot">Forgot PIN?</button>
+    <div id="forgotbox" hidden>
+      <p class="err" style="min-height:0">This erases the journal on this phone and removes the PIN. You can restore from a backup file afterwards.</p>
+      <div class="btns"><button type="button" class="b-loss" id="forgotyes">Erase and unlock</button><button type="button" class="b-ghost" id="forgotno">Cancel</button></div>
+    </div>
+  </div>
   <div id="splash" aria-hidden="true"><img src="logo.png" alt="" width="120" height="120"></div>
 <script>
 (function () {
   var EXAMPLE = {
-    start: 125, target: 130, notes: [],
+    start: 125, target: 130, dll: 0, mgoal: 0, cash: [], notes: [],
     trades: [
       { id: 'x1', pl: 1.5, note: 'London open, OB retest' },
       { id: 'x2', pl: -1, note: 'Stopped out before NY' },
@@ -485,16 +588,25 @@ select { font: inherit; }
   
 
   function balances() {
-    var out = [state.start], i;
-    for (i = 0; i < state.trades.length; i++) out.push(r2(out[i] + state.trades[i].pl));
+    var out = [state.start], run = state.start, i, ci = 0;
+    var cash = (state.cash || []).slice().sort(function (a, b) { return a.t - b.t; });
+    for (i = 0; i < state.trades.length; i++) {
+      var tt = state.trades[i].t || 0, add = 0;
+      while (ci < cash.length && cash[ci].t <= tt) { add += cash[ci].amt; ci++; }
+      run = r2(run + add + state.trades[i].pl);
+      out.push(run);
+    }
+    var rest = 0;
+    while (ci < cash.length) { rest += cash[ci].amt; ci++; }
+    if (rest) out[out.length - 1] = r2(out[out.length - 1] + rest);
     return out;
   }
 
   function render() {
     var bal = balances();
     var last = bal[bal.length - 1];
-    var net = r2(last - state.start);
     var t = state.trades;
+    var net = r2(t.reduce(function (s, x) { return s + x.pl; }, 0));
     var wins = t.filter(function (x) { return x.pl > 0; }).length;
 
     $('bal').textContent = money(last);
@@ -525,6 +637,10 @@ select { font: inherit; }
     if (!$('tdate').value) setToday();
     updateCalc();
     $('target').value = String(state.target);
+    $('dll').value = state.dll ? String(state.dll) : '';
+    $('mgoal').value = state.mgoal ? String(state.mgoal) : '';
+    renderAlerts();
+    renderCash();
     renderList();
     renderDaily();
     renderNotes();
@@ -595,7 +711,7 @@ select { font: inherit; }
   }
 
   function resetAll() {
-    state = { start: state.start, target: state.target, contract: state.contract, trades: [], notes: [] };
+    state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, cash: [], trades: [], notes: [] };
     isExample = false;
     $('resetconfirm').hidden = true; $('resetbtn').hidden = false;
     persist(); render();
@@ -638,7 +754,7 @@ select { font: inherit; }
   }
 
   function computeStats(list, startBal) {
-    var s = { n: list.length, wins: 0, losses: 0, gw: 0, gl: 0, fees: 0, best: null, worst: null, dd: 0, peak: startBal };
+    var s = { rn: 0, rsum: 0, n: list.length, wins: 0, losses: 0, gw: 0, gl: 0, fees: 0, best: null, worst: null, dd: 0, peak: startBal };
     var run = startBal, ws = 0, ls = 0, cw = 0, cl = 0;
     list.forEach(function (x) {
       if (x.pl > 0) { s.wins++; s.gw += x.pl; cw++; cl = 0; }
@@ -647,6 +763,7 @@ select { font: inherit; }
       if (cw > ws) ws = cw;
       if (cl > ls) ls = cl;
       if (x.fees) s.fees += x.fees;
+      var rv = rOf(x); if (rv !== null) { s.rn++; s.rsum += rv; }
       if (!s.best || x.pl > s.best.pl) s.best = x;
       if (!s.worst || x.pl < s.worst.pl) s.worst = x;
       run = r2(run + x.pl);
@@ -828,7 +945,7 @@ select { font: inherit; }
     var rng = r.from === null ? 'All trades' : fmtDMY(r.from) + ' to ' + fmtDMY(r.to);
     var out = ['The College Trader report: ' + r.label, rng, ''];
     if (!st.n) return out.concat(['No trades in this period.']).join('\n');
-    out.push('Net P&L: ' + signed(st.net), 'Trades: ' + st.n + ' (' + st.wins + ' wins, ' + st.losses + ' losses)', 'Win rate: ' + st.wr.toFixed(0) + '%', 'Profit factor: ' + fmtPF(st),
+    out.push('Net P&L: ' + signed(st.net), 'Trades: ' + st.n + ' (' + st.wins + ' wins, ' + st.losses + ' losses)', 'Win rate: ' + st.wr.toFixed(0) + '%', 'Profit factor: ' + fmtPF(st), st.rn ? 'Avg R: ' + fmtR(st.rsum / st.rn) + ' (' + st.rn + ' trades with SL)' : 'Avg R: n/a',
       'Avg win: ' + signed(r2(st.avgW)) + ', avg loss: ' + signed(-r2(st.avgL)), 'Best trade: ' + signed(st.best.pl) + ', worst trade: ' + signed(st.worst.pl), 'Fees: $' + st.fees.toFixed(2), '');
     return out.concat(rptLines(list, st)).join('\n');
   }
@@ -848,6 +965,7 @@ select { font: inherit; }
     box.appendChild(tile('kpi', 'Trades', String(st.n), '', st.wins + 'W ' + st.losses + 'L'));
     box.appendChild(tile('kpi', 'Win rate', st.wr.toFixed(0) + '%', ''));
     box.appendChild(tile('kpi', 'Profit factor', fmtPF(st), ''));
+    if (st.rn) box.appendChild(tile('kpi', 'Avg R', fmtR(st.rsum / st.rn), st.rsum >= 0 ? 'pos' : 'neg', st.rn + ' trades with SL'));
     box.appendChild(tile('kpi', 'Avg win', st.wins ? signed(r2(st.avgW)) : '-', st.wins ? 'pos' : ''));
     box.appendChild(tile('kpi', 'Avg loss', st.losses ? signed(-r2(st.avgL)) : '-', st.losses ? 'neg' : ''));
     box.appendChild(tile('kpi', 'Best trade', signed(st.best.pl), st.best.pl >= 0 ? 'pos' : 'neg'));
@@ -869,6 +987,65 @@ select { font: inherit; }
     $('rmsg').textContent = 'CSV downloaded (' + list.length + ' trades).';
   }
 
+  function rOf(tr) {
+    if (tr.sl === undefined || tr.entry === undefined || !(tr.lots > 0)) return null;
+    var risk = Math.abs(tr.entry - tr.sl) * tr.lots * contractSize();
+    return risk > 0 ? r2(tr.pl / risk) : null;
+  }
+  function chkCount(tr) { return typeof tr.chk === 'string' ? (tr.chk.match(/1/g) || []).length : ''; }
+  function fmtR(v) { return (v < 0 ? '-' : '+') + Math.abs(v).toFixed(2) + 'R'; }
+
+  function todayNet() {
+    var tk = dayKey(Date.now()), s = 0;
+    if (isExample) return 0;
+    state.trades.forEach(function (x) { if (x.t && dayKey(x.t) === tk) s = r2(s + x.pl); });
+    return s;
+  }
+
+  function mkAlert(cls, text, buttons) {
+    var d = document.createElement('div'); d.className = 'alert ' + cls;
+    var p = document.createElement('div'); p.textContent = text; d.appendChild(p);
+    if (buttons) {
+      var b = document.createElement('div'); b.className = 'btns';
+      buttons.forEach(function (x) {
+        var bt = document.createElement('button'); bt.type = 'button'; bt.className = x[2] || 'b-ghost'; bt.textContent = x[0]; bt.onclick = x[1]; b.appendChild(bt);
+      });
+      d.appendChild(b);
+    }
+    return d;
+  }
+
+  function renderAlerts() {
+    var box = $('alerts'); box.textContent = '';
+    var lim = state.dll || 0, tn = todayNet(), msg = '';
+    if (lim > 0 && tn < 0) {
+      if (-tn >= lim) { msg = 'Daily loss limit reached: ' + signed(tn) + ' of -$' + lim.toFixed(2) + '. Stop trading for today.'; box.appendChild(mkAlert('warn', msg)); }
+      else if (-tn >= lim * 0.7) { msg = 'Careful: ' + signed(tn) + ' today, limit is -$' + lim.toFixed(2) + '.'; box.appendChild(mkAlert('warn', msg)); }
+    }
+    $('limitmsg').textContent = msg;
+    if (!isExample && state.trades.length >= 3) {
+      var last = 0, snooze = 0;
+      try { last = Number(localStorage.getItem('ct-lastbackup')) || 0; snooze = Number(localStorage.getItem('ct-bksnooze')) || 0; } catch (e) {}
+      var days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+      if ((days === null || days >= 7) && Date.now() > snooze) {
+        box.appendChild(mkAlert('info', days === null ? 'No backup yet. Your journal lives only on this phone.' : 'Last backup was ' + days + ' days ago.', [
+          ['Save backup now', function () { exportBackup(); }, 'b-accent'],
+          ['Remind me tomorrow', function () { try { localStorage.setItem('ct-bksnooze', String(Date.now() + 86400000)); } catch (e) {} renderAlerts(); }]
+        ]));
+      }
+    }
+    var g = state.mgoal || 0, gc = $('goalcard');
+    gc.hidden = !(g > 0);
+    if (g > 0) {
+      var now = new Date(), mp = 0;
+      state.trades.forEach(function (x) { if (x.t) { var d = new Date(x.t); if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) mp = r2(mp + x.pl); } });
+      var pc = Math.max(0, Math.min(100, mp / g * 100));
+      $('goaltxt').textContent = signed(mp) + ' / $' + g.toFixed(2);
+      $('goalfill').style.width = pc.toFixed(0) + '%';
+      $('goalsub').textContent = mp >= g ? 'Goal reached. Protect it.' : '$' + r2(g - mp).toFixed(2) + ' to go this month (' + pc.toFixed(0) + '%).';
+    }
+  }
+
   function renderDashboard() {
     var t = state.trades, n = t.length, i;
     var bal = balances();
@@ -883,15 +1060,17 @@ select { font: inherit; }
     var avgW = wins.length ? signed(r2(gw / wins.length)) : '-';
     var avgL = losses.length ? signed(-r2(gl / losses.length)) : '-';
     var exp = n ? signed(r2(net / n)) : '-';
-    var peak = bal[0], dd = 0;
-    for (i = 0; i < bal.length; i++) { if (bal[i] > peak) peak = bal[i]; if (peak - bal[i] > dd) dd = peak - bal[i]; }
+    var dd = computeStats(t, state.start).dd;
     var ws = 0, ls = 0, cw = 0, cl = 0;
     t.forEach(function (x) {
       if (x.pl > 0) { cw++; cl = 0; } else if (x.pl < 0) { cl++; cw = 0; } else { cw = 0; cl = 0; }
       if (cw > ws) ws = cw; if (cl > ls) ls = cl;
     });
+    var stt = computeStats(t, state.start);
     var items = [
       ['Profit factor', pf, ''],
+      ['Avg R (' + stt.rn + ' with SL)', stt.rn ? fmtR(stt.rsum / stt.rn) : '-', stt.rn ? (stt.rsum >= 0 ? 'pos' : 'neg') : ''],
+      ['Total R', stt.rn ? fmtR(stt.rsum) : '-', stt.rn ? (stt.rsum >= 0 ? 'pos' : 'neg') : ''],
       ['Expectancy per trade', exp, n ? (net >= 0 ? 'pos' : 'neg') : ''],
       ['Avg win', avgW, wins.length ? 'pos' : ''],
       ['Avg loss', avgL, losses.length ? 'neg' : ''],
@@ -910,6 +1089,8 @@ select { font: inherit; }
     breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Choose a Session when adding a trade and it will show here.');
     breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Choose a Logic tag when adding a trade and it will show here.');
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
+    breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
+    breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -1001,12 +1182,13 @@ select { font: inherit; }
   }
 
   function buildCsv(list) {
-    var rows = [['Date', 'Direction', 'Entry', 'Exit', 'Lot size', 'Session', 'Logic tag', 'Logic note', 'P&L ($)', 'Fees ($)', 'Result']];
+    var rows = [['Date', 'Direction', 'Entry', 'Exit', 'Lot size', 'Session', 'Logic tag', 'Logic note', 'P&L ($)', 'Fees ($)', 'Result', 'Stop loss', 'R multiple', 'Mistake', 'Checklist (of 5)']];
     (list || state.trades).forEach(function (tr) {
       rows.push([
         csvCell(tr.t ? fmtDMY(tr.t) : ''), csvCell(tr.dir, true), csvCell(tr.entry), csvCell(tr.exit), csvCell(tr.lots),
         csvCell(tr.session, true), csvCell(tr.tag, true), csvCell(tr.logic || tr.note, true),
-        csvCell(tr.pl), csvCell(tr.fees), csvCell(tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE'))
+        csvCell(tr.pl), csvCell(tr.fees), csvCell(tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE')),
+        csvCell(tr.sl), csvCell(rOf(tr)), csvCell(tr.mist, true), csvCell(chkCount(tr))
       ]);
     });
     return '\uFEFF' + rows.map(function (r) { return r.join(','); }).join('\r\n');
@@ -1033,9 +1215,11 @@ select { font: inherit; }
 
   function exportBackup() {
     if (isExample || (!state.trades.length && !(state.notes || []).length)) { dmsg('Nothing to back up yet.'); return; }
-    var data = { app: 'college-trader', version: 1, exported: new Date().toISOString(), data: { start: state.start, target: state.target, contract: contractSize(), trades: state.trades, notes: state.notes || [] } };
+    var data = { app: 'college-trader', version: 1, exported: new Date().toISOString(), data: { start: state.start, target: state.target, contract: contractSize(), dll: state.dll || 0, mgoal: state.mgoal || 0, cash: state.cash || [], trades: state.trades, notes: state.notes || [] } };
     saveFile('college-trader-backup-' + stamp() + '.json', JSON.stringify(data), 'application/json');
+    try { localStorage.setItem('ct-lastbackup', String(Date.now())); localStorage.removeItem('ct-bksnooze'); } catch (e) {}
     dmsg('Backup downloaded. Keep it somewhere safe.');
+    renderAlerts();
   }
 
   function cleanBackup(obj) {
@@ -1054,6 +1238,10 @@ select { font: inherit; }
       ['session', 'tag'].forEach(function (k) { var v = str(x[k], 40); if (v) o[k] = v; });
       var lg = str(x.logic, 300); if (lg) o.logic = lg;
       var nt = str(x.note, 300); if (nt && !lg) o.note = nt;
+      var slv = num(x.sl); if (slv !== null && x.sl !== '' && x.sl !== null) o.sl = slv;
+      var ms = str(x.mist, 40); if (ms) o.mist = ms;
+      if (typeof x.chk === 'string' && /^[01]{5}$/.test(x.chk)) o.chk = x.chk;
+      if (typeof x.img === 'string' && x.img.length < 400000 && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(x.img)) o.img = x.img;
       o.res = pl > 0 ? 'Win' : pl < 0 ? 'Loss' : 'BE';
       trades.push(o);
     });
@@ -1064,8 +1252,15 @@ select { font: inherit; }
       if (t === null || !tx) return;
       notes.push({ id: str(x.id, 40) || 'n' + i, t: t, text: tx });
     });
-    var s = num(d.start), tg = num(d.target), ct = num(d.contract);
-    return { start: s > 0 ? s : 125, target: tg > 0 ? tg : 130, contract: ct > 0 ? ct : 100, trades: trades, notes: notes };
+    var cash = [];
+    (Array.isArray(d.cash) ? d.cash : []).slice(0, 5000).forEach(function (x, i) {
+      var t = x ? num(x.t) : null, a = x ? num(x.amt) : null;
+      if (t === null || a === null || a === 0) return;
+      cash.push({ id: str(x.id, 40) || 'c' + i, t: t, amt: r2(a), note: str(x.note, 80) });
+    });
+    cash.sort(function (a, b) { return a.t - b.t; });
+    var s = num(d.start), tg = num(d.target), ct = num(d.contract), dl = num(d.dll), mg = num(d.mgoal);
+    return { start: s > 0 ? s : 125, target: tg > 0 ? tg : 130, contract: ct > 0 ? ct : 100, dll: dl > 0 ? dl : 0, mgoal: mg > 0 ? mg : 0, cash: cash, trades: trades, notes: notes };
   }
 
   var pendingImport = null;
@@ -1073,7 +1268,7 @@ select { font: inherit; }
   function onImportFile() {
     var f = $('impfile').files && $('impfile').files[0];
     if (!f) return;
-    if (f.size > 5000000) { dmsg('That file is too large to be a backup.'); $('impfile').value = ''; return; }
+    if (f.size > 30000000) { dmsg('That file is too large to be a backup.'); $('impfile').value = ''; return; }
     var rd = new FileReader();
     rd.onload = function () {
       var obj = null;
@@ -1082,7 +1277,7 @@ select { font: inherit; }
       $('impfile').value = '';
       if (!clean) { dmsg('That file is not a College Trader backup.'); return; }
       pendingImport = clean;
-      $('imptext').textContent = 'Restore ' + clean.trades.length + ' trades and ' + clean.notes.length + ' notes? This replaces what is saved on this phone now.';
+      $('imptext').textContent = 'Restore ' + clean.trades.length + ' trades, ' + clean.notes.length + ' notes and ' + clean.cash.length + ' deposit/withdrawal entries? This replaces what is saved on this phone now.';
       $('impconfirm').hidden = false; $('impbtn').hidden = true; dmsg('');
     };
     rd.onerror = function () { dmsg('Could not read that file.'); };
@@ -1094,13 +1289,13 @@ select { font: inherit; }
   function renderDaily() {
     var ul = $('days');
     ul.textContent = '';
-    var groups = [], map = {}, run = state.start, i;
-    state.trades.forEach(function (tr) {
+    var groups = [], map = {}, i, bal = balances();
+    state.trades.forEach(function (tr, ti) {
       var k = tr.t ? dayKey(tr.t) : 'example';
       var g = map[k];
-      if (!g) { g = { t: tr.t, n: 0, w: 0, pl: 0, close: run }; map[k] = g; groups.push(g); }
+      if (!g) { g = { t: tr.t, n: 0, w: 0, pl: 0, close: 0 }; map[k] = g; groups.push(g); }
       g.n++; if (tr.pl > 0) g.w++;
-      g.pl = r2(g.pl + tr.pl); run = r2(run + tr.pl); g.close = run;
+      g.pl = r2(g.pl + tr.pl); g.close = bal[ti + 1];
     });
     $('dayempty').hidden = groups.length > 0;
     var todayKey = dayKey(Date.now());
@@ -1117,6 +1312,55 @@ select { font: inherit; }
       var pl = document.createElement('span'); pl.className = 'tpl ' + (g2.pl >= 0 ? 'pos' : 'neg'); pl.style.fontSize = '17px'; pl.textContent = signed(g2.pl);
       li.appendChild(main); li.appendChild(pl);
       ul.appendChild(li);
+    }
+  }
+
+  var cashType = 'dep';
+  function cashTs() {
+    var v = $('cdate').value;
+    if (!v) return Date.now();
+    var p = v.split('-'), y = +p[0], m = +p[1] - 1, d = +p[2], n = new Date();
+    if (y === n.getFullYear() && m === n.getMonth() && d === n.getDate()) return Date.now();
+    return new Date(y, m, d, 12, 0, 0).getTime();
+  }
+  function setCashDate() { var d = new Date(); $('cdate').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function setCashType(t) { cashType = t; $('cdep').className = t === 'dep' ? 'sel' : ''; $('cwd').className = t === 'wd' ? 'sel' : ''; $('cerr').textContent = ''; }
+  function addCash() {
+    var v = numv('camt');
+    if (v === null || v <= 0) { $('cerr').textContent = 'Enter an amount above 0.'; $('camt').focus(); return; }
+    var bal = balances(), cur = bal[bal.length - 1];
+    if (cashType === 'wd' && v > cur + 1e-9) { $('cerr').textContent = 'Withdrawal is more than your balance (' + money(cur) + ').'; return; }
+    leaveExample();
+    if (!state.cash) state.cash = [];
+    state.cash.push({ id: 'c' + Date.now(), t: cashTs(), amt: r2(cashType === 'wd' ? -v : v), note: $('cnote').value.trim().slice(0, 80) });
+    state.cash.sort(function (a, b) { return a.t - b.t; });
+    $('camt').value = ''; $('cnote').value = ''; $('cerr').textContent = ''; setCashDate();
+    persist(); render();
+  }
+  function removeCash(id) {
+    state.cash = (state.cash || []).filter(function (x) { return x.id !== id; });
+    persist(); render();
+  }
+  function renderCash() {
+    var ul = $('clist'); ul.textContent = '';
+    var c = state.cash || [], dep = 0, wd = 0, i;
+    c.forEach(function (x) { if (x.amt > 0) dep += x.amt; else wd += -x.amt; });
+    $('cempty').hidden = c.length > 0;
+    $('csum').textContent = c.length ? 'Deposited ' + money(r2(dep)) + ' \u00b7 Withdrawn ' + money(r2(wd)) + ' \u00b7 Net ' + signed(r2(dep - wd)) : '';
+    for (i = c.length - 1; i >= 0; i--) {
+      (function (x) {
+        var li = document.createElement('li');
+        var main = document.createElement('div'); main.className = 'tmain';
+        var lab = document.createElement('div'); lab.className = 'dlabel'; lab.textContent = (x.amt > 0 ? 'Deposit' : 'Withdrawal') + (x.note ? ' - ' + x.note : '');
+        var meta = document.createElement('div'); meta.className = 'tmeta'; meta.textContent = fmtDMY(x.t);
+        main.appendChild(lab); main.appendChild(meta);
+        var right = document.createElement('div'); right.className = 'acts'; right.style.alignItems = 'center';
+        var amt = document.createElement('span'); amt.className = 'tpl ' + (x.amt > 0 ? 'pos' : ''); amt.textContent = signed(x.amt);
+        var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete entry');
+        del.onclick = function () { removeCash(x.id); };
+        right.appendChild(amt); right.appendChild(del);
+        li.appendChild(main); li.appendChild(right); ul.appendChild(li);
+      })(c[i]);
     }
   }
 
@@ -1140,14 +1384,22 @@ select { font: inherit; }
         if (tr.lots !== undefined) parts.push(tr.lots + ' lot');
         if (tr.session) parts.push(tr.session);
         if (tr.fees) parts.push('Fees $' + tr.fees);
+        var rr = rOf(tr); if (rr !== null) parts.push(fmtR(rr));
+        if (tr.mist) parts.push('Mistake: ' + tr.mist);
+        if (typeof tr.chk === 'string') parts.push('Checklist ' + chkCount(tr) + '/5');
         if (parts.length) { var det = document.createElement('div'); det.className = 'tdet'; det.textContent = parts.join(' | '); main.appendChild(det); }
+        if (tr.img) { var th = document.createElement('img'); th.className = 'thumb'; th.alt = 'Chart screenshot'; th.src = tr.img; th.onclick = function () { $('viewerimg').src = tr.img; $('viewer').hidden = false; }; main.appendChild(th); }
         var pl = document.createElement('span'); pl.className = 'tpl ' + (tr.pl >= 0 ? 'pos' : 'neg'); pl.textContent = signed(tr.pl);
         var foot = document.createElement('div'); foot.className = 'tfoot';
         var meta = document.createElement('span'); meta.className = 'tmeta'; meta.textContent = '#' + (idx + 1) + ' \u00b7 ' + (tr.t ? fmtDMY(tr.t) : 'Example') + ' \u00b7 ' + (tr.res || (tr.pl > 0 ? 'Win' : tr.pl < 0 ? 'Loss' : 'BE'));
         var del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
         del.setAttribute('aria-label', 'Delete trade ' + (idx + 1));
         del.onclick = function () { removeTrade(idx); };
-        foot.appendChild(meta); foot.appendChild(del);
+        var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'del'; ed.textContent = 'Edit';
+        ed.setAttribute('aria-label', 'Edit trade ' + (idx + 1));
+        ed.onclick = function () { editTrade(idx); };
+        var acts = document.createElement('div'); acts.className = 'acts'; acts.appendChild(ed); acts.appendChild(del);
+        foot.appendChild(meta); foot.appendChild(acts);
         li.appendChild(main); li.appendChild(pl); li.appendChild(foot);
         ul.appendChild(li);
       })(i);
@@ -1194,16 +1446,16 @@ select { font: inherit; }
   function setStatus(msg) { $('status').textContent = msg || ''; }
 
   function persist() {
-    var payload = { start: state.start, target: state.target, contract: state.contract || 100, trades: state.trades, notes: state.notes || [] };
+    var payload = { start: state.start, target: state.target, contract: state.contract || 100, dll: state.dll || 0, mgoal: state.mgoal || 0, cash: state.cash || [], trades: state.trades, notes: state.notes || [] };
     if (dbDoc) {
       writing = writing.then(function () { return dbDoc.set(payload); }).then(function () { setStatus('Saved'); }, function () { setStatus('Could not save. Check your connection and try again.'); });
     } else {
-      try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); setStatus('Saved on this device'); } catch (e) { setStatus('Saving is not available here.'); }
+      try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); setStatus('Saved on this device'); } catch (e) { setStatus('Could not save (storage may be full). Save a backup and remove old screenshots.'); }
     }
   }
 
   function leaveExample() {
-    if (isExample) { state = { start: state.start, target: state.target, contract: state.contract, trades: [], notes: [] }; isExample = false; }
+    if (isExample) { state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, cash: [], trades: [], notes: [] }; isExample = false; }
   }
 
   var dir = '';
@@ -1236,11 +1488,73 @@ select { font: inherit; }
     return g === null ? null : r2(g - feesv());
   }
 
+  var editId = null, curImg = null;
+  function chkString() { var s = '', i; for (i = 0; i < 5; i++) s += $('chk' + i).checked ? '1' : '0'; return s; }
+  function anyChk() { return chkString() !== '00000'; }
+  function setShot(url) {
+    curImg = url || null;
+    $('shotprev').hidden = !curImg; $('shotrm').hidden = !curImg;
+    if (curImg) $('shotprev').src = curImg; else $('shotprev').removeAttribute('src');
+  }
+  function onShot() {
+    var f = $('shot').files && $('shot').files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var im = new Image();
+      im.onload = function () {
+        var max = 720, sc = Math.min(1, max / Math.max(im.width, im.height));
+        var c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        var url = c.toDataURL('image/jpeg', 0.6);
+        if (url.length > 300000) url = c.toDataURL('image/jpeg', 0.4);
+        setShot(url); $('shot').value = '';
+      };
+      im.onerror = function () { $('err').textContent = 'Could not read that image.'; };
+      im.src = String(rd.result);
+    };
+    rd.readAsDataURL(f);
+  }
+  function resetForm() {
+    ['ent', 'ext', 'lots', 'fees', 'amt', 'logic', 'sl'].forEach(function (i) { $(i).value = ''; });
+    $('sess').value = ''; $('ltag').value = ''; $('mist').value = '';
+    for (var i = 0; i < 5; i++) $('chk' + i).checked = false;
+    setShot(null); $('shot').value = '';
+    dir = ''; $('dirb').className = ''; $('dirs').className = '';
+    editId = null; $('saveauto').textContent = 'Save trade'; $('editcancel').hidden = true;
+    $('err').textContent = '';
+    setToday(); updateCalc();
+  }
+  function editTrade(idx) {
+    var tr = state.trades[idx]; if (!tr) return;
+    resetForm();
+    editId = tr.id;
+    if (tr.t) { var d = new Date(tr.t); $('tdate').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); showDate(); }
+    dir = tr.dir || ''; $('dirb').className = dir === 'Buy' ? 'sel' : ''; $('dirs').className = dir === 'Sell' ? 'sel' : '';
+    if (tr.entry !== undefined) $('ent').value = tr.entry;
+    if (tr.exit !== undefined) $('ext').value = tr.exit;
+    if (tr.lots !== undefined) $('lots').value = tr.lots;
+    if (tr.fees !== undefined) $('fees').value = tr.fees;
+    if (tr.sl !== undefined) $('sl').value = tr.sl;
+    $('sess').value = tr.session || ''; $('ltag').value = tr.tag || ''; $('mist').value = tr.mist || '';
+    $('logic').value = tr.logic || tr.note || '';
+    if (typeof tr.chk === 'string') for (var i = 0; i < 5; i++) $('chk' + i).checked = tr.chk.charAt(i) === '1';
+    if (tr.entry === undefined || tr.exit === undefined) $('amt').value = Math.abs(tr.pl);
+    setShot(tr.img);
+    $('saveauto').textContent = 'Update trade'; $('editcancel').hidden = false;
+    $('err').textContent = (tr.entry === undefined || tr.exit === undefined) ? 'Editing: tap Profit + or Loss - below to save the amount, or fill entry/exit/lots.' : '';
+    updateCalc();
+    showTab('journal');
+    setTimeout(function () { $('addcard').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+  }
+
   function updateCalc() {
     var g = calcGross(), el = $('calc');
     if (g === null) { el.textContent = 'Fill in direction, entry, exit and lots to calculate P&L automatically.'; el.className = 'calc'; return; }
     var net = r2(g - feesv());
-    el.textContent = 'P&L: ' + signed(net) + ' after fees (gross ' + signed(g) + ', fees $' + feesv().toFixed(2) + ', ' + contractSize() + ' oz per lot)';
+    var slv = numv('sl'), el2 = numv('ent'), lt = numv('lots'), rtxt = '';
+    if (slv !== null && el2 !== null && lt > 0 && Math.abs(el2 - slv) > 0) rtxt = ', risk $' + r2(Math.abs(el2 - slv) * lt * contractSize()).toFixed(2) + ', ' + fmtR(r2(net / (Math.abs(el2 - slv) * lt * contractSize()))); 
+    el.textContent = 'P&L: ' + signed(net) + ' after fees (gross ' + signed(g) + ', fees $' + feesv().toFixed(2) + ', ' + contractSize() + ' oz per lot' + rtxt + ')';
     el.className = 'calc ' + (net >= 0 ? 'pos' : 'neg');
   }
 
@@ -1254,26 +1568,29 @@ select { font: inherit; }
 
   function saveTrade(pl) {
     leaveExample();
-    var tr = { id: 't' + Date.now(), pl: pl, t: tradeTime() };
-    var e = numv('ent'), x = numv('ext'), l = numv('lots'), f = numv('fees');
+    var orig = null, oi = -1, i;
+    if (editId) { for (i = 0; i < state.trades.length; i++) if (state.trades[i].id === editId) { orig = state.trades[i]; oi = i; } }
+    var when = tradeTime();
+    if (orig && orig.t && dayKey(when) === dayKey(orig.t)) when = orig.t;
+    var tr = { id: orig ? orig.id : 't' + Date.now(), pl: pl, t: when };
+    var e = numv('ent'), x = numv('ext'), l = numv('lots'), f = numv('fees'), s = numv('sl');
     if (dir) tr.dir = dir;
     if (e !== null) tr.entry = e;
     if (x !== null) tr.exit = x;
     if (l !== null) tr.lots = l;
     if (f !== null) tr.fees = f;
+    if (s !== null) tr.sl = s;
     if ($('sess').value) tr.session = $('sess').value;
     if ($('ltag').value) tr.tag = $('ltag').value;
+    if ($('mist').value) tr.mist = $('mist').value;
+    if (anyChk()) tr.chk = chkString();
+    if (curImg) tr.img = curImg;
     var lg = $('logic').value.trim();
     if (lg) tr.logic = lg;
     tr.res = pl > 0 ? 'Win' : pl < 0 ? 'Loss' : 'BE';
-    state.trades.push(tr);
+    if (oi >= 0) state.trades[oi] = tr; else state.trades.push(tr);
     state.trades.sort(function (a, b) { return (a.t || 0) - (b.t || 0); });
-    ['ent', 'ext', 'lots', 'fees', 'amt', 'logic'].forEach(function (i) { $(i).value = ''; });
-    $('sess').value = ''; $('ltag').value = '';
-    dir = ''; $('dirb').className = ''; $('dirs').className = '';
-    $('err').textContent = '';
-    setToday();
-    updateCalc();
+    resetForm();
     persist(); render();
   }
 
@@ -1297,9 +1614,12 @@ select { font: inherit; }
 
   function saveSettings() {
     var s = parseFloat($('start').value), tg = parseFloat($('target').value), ct = parseFloat($('contract').value);
+    var dl = parseFloat($('dll').value), mg = parseFloat($('mgoal').value);
+    if (isNaN(dl) || dl < 0) dl = 0;
+    if (isNaN(mg) || mg < 0) mg = 0;
     if (isNaN(s) || s < 0 || isNaN(tg) || tg < 0 || isNaN(ct) || ct <= 0) { return; }
-    if (s === state.start && tg === state.target && ct === contractSize()) return;
-    state.start = s; state.target = tg; state.contract = ct;
+    if (s === state.start && tg === state.target && ct === contractSize() && dl === (state.dll || 0) && mg === (state.mgoal || 0)) return;
+    state.start = s; state.target = tg; state.contract = ct; state.dll = dl; state.mgoal = mg;
     if (!isExample) persist();
     render();
   }
@@ -1347,6 +1667,72 @@ select { font: inherit; }
   $('resetbtn').onclick = function () { $('resetbtn').hidden = true; $('resetconfirm').hidden = false; };
   $('resetno').onclick = function () { $('resetconfirm').hidden = true; $('resetbtn').hidden = false; };
   $('resetyes').onclick = resetAll;
+  $('cdep').onclick = function () { setCashType('dep'); };
+  $('cwd').onclick = function () { setCashType('wd'); };
+  $('cadd').onclick = addCash;
+  $('camt').addEventListener('input', function () { $('cerr').textContent = ''; });
+  setCashDate();
+  $('dll').addEventListener('change', saveSettings);
+  $('mgoal').addEventListener('change', saveSettings);
+  $('sl').addEventListener('input', function () { updateCalc(); });
+  $('shot').addEventListener('change', onShot);
+  $('shotrm').onclick = function () { setShot(null); };
+  $('editcancel').onclick = function () { resetForm(); };
+  $('viewer').onclick = function () { $('viewer').hidden = true; $('viewerimg').removeAttribute('src'); };
+
+  /* PIN lock: a convenience lock only. The hash is stored next to the data on the same phone. */
+  var PIN_KEY = 'ct-pin', hiddenAt = 0;
+  function hashPin(pin, cb) {
+    var salt = 'ct1:' + pin;
+    try {
+      if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+        window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt)).then(function (b) {
+          var a = new Uint8Array(b), s = '', i; for (i = 0; i < a.length; i++) s += (a[i] < 16 ? '0' : '') + a[i].toString(16);
+          cb(s);
+        }, function () { cb(simpleHash(salt)); });
+        return;
+      }
+    } catch (e) {}
+    cb(simpleHash(salt));
+  }
+  function simpleHash(s) { var h = 5381, i; for (i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return 'h' + h; }
+  function getPin() { try { return localStorage.getItem(PIN_KEY) || ''; } catch (e) { return ''; } }
+  function showLock() {
+    if (!getPin()) return;
+    $('lock').hidden = false; $('pinentry').value = ''; $('lockmsg').textContent = ''; $('forgotbox').hidden = true;
+    setTimeout(function () { try { $('pinentry').focus(); } catch (e) {} }, 100);
+  }
+  function renderPinUi() { $('pinoff').hidden = !getPin(); $('pinset').textContent = getPin() ? 'Change PIN' : 'Set PIN'; }
+  $('pinentry').addEventListener('input', function () {
+    var v = $('pinentry').value.replace(/\D/g, '').slice(0, 4); $('pinentry').value = v;
+    if (v.length < 4) return;
+    hashPin(v, function (hh) {
+      if (hh === getPin()) { $('lock').hidden = true; $('pinentry').value = ''; }
+      else { $('lockmsg').textContent = 'Wrong PIN. Try again.'; $('pinentry').value = ''; }
+    });
+  });
+  $('forgot').onclick = function () { $('forgotbox').hidden = false; $('forgot').hidden = true; };
+  $('forgotno').onclick = function () { $('forgotbox').hidden = true; $('forgot').hidden = false; };
+  $('forgotyes').onclick = function () {
+    try { localStorage.removeItem(PIN_KEY); localStorage.removeItem(LS_KEY); } catch (e) {}
+    state = clone(EXAMPLE); isExample = true; $('lock').hidden = true; $('forgot').hidden = false; renderPinUi(); render();
+  };
+  $('pinset').onclick = function () {
+    var v = $('pinin').value.replace(/\D/g, '');
+    if (v.length !== 4) { $('pinmsg').textContent = 'Enter exactly 4 digits.'; return; }
+    hashPin(v, function (hh) {
+      try { localStorage.setItem(PIN_KEY, hh); $('pinmsg').textContent = 'PIN saved. The app will ask for it when you open it.'; } catch (e) { $('pinmsg').textContent = 'Could not save the PIN here.'; }
+      $('pinin').value = ''; renderPinUi();
+    });
+  };
+  $('pinoff').onclick = function () { try { localStorage.removeItem(PIN_KEY); } catch (e) {} $('pinmsg').textContent = 'PIN removed.'; renderPinUi(); };
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+    else if (hiddenAt && Date.now() - hiddenAt > 60000) showLock();
+  });
+  renderPinUi();
+  showLock();
+
   $('start').addEventListener('change', saveSettings);
   $('target').addEventListener('change', saveSettings);
 
@@ -1355,7 +1741,7 @@ select { font: inherit; }
 
   function applyLoaded(d) {
     if (d && Array.isArray(d.trades)) {
-      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, contract: Number(d.contract) || 100, trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
+      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, contract: Number(d.contract) || 100, dll: Number(d.dll) || 0, mgoal: Number(d.mgoal) || 0, cash: Array.isArray(d.cash) ? d.cash : [], trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
       isExample = false;
     }
   }
