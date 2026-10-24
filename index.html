@@ -104,6 +104,21 @@
 #poster .diya.l { left: -26px; } #poster .diya.r { right: -26px; animation-delay: 0.5s; }
 #poster .dwhello { margin-top: 10px; font-family: Georgia, serif; font-size: 22px; letter-spacing: 0.14em; background: linear-gradient(90deg, #ffd27a, #ff9a3c, #ffd27a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @media (prefers-reduced-motion: reduce) { #poster .dwlights i, #poster .diya, #poster .logowrap::before { animation: none; } }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.badges span { font-size: 12px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--line); color: var(--ink-2); opacity: 0.5; }
+.badges span.on { opacity: 1; color: var(--on-fill); background: var(--accent); border-color: var(--accent); font-weight: 700; }
+.srow { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.srow:last-child { border-bottom: 0; }
+.srow .sopen { color: var(--profit); font-weight: 700; }
+#cool { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+#cool[hidden] { display: none; }
+#cool .cbox { max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 10px; color: #fff; }
+#cool h2 { margin: 0; letter-spacing: 0.1em; text-transform: uppercase; }
+#cool .cring { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, rgba(76,201,168,0.55), rgba(76,201,168,0.08) 70%); animation: breathe 8s ease-in-out infinite; }
+@keyframes breathe { 0%,100% { transform: scale(0.65); } 50% { transform: scale(1.15); } }
+#cool .ctime { font-family: ui-monospace, Menlo, monospace; font-size: 44px; }
+@media (prefers-reduced-motion: reduce) { #cool .cring { animation: none; } }
 :root[data-theme="luxury"] { --bg: #000000; --surface: #0b0a07; --ink: #f3e9d0; --ink-2: #a89b7a; --line: rgba(212,175,55,0.30); --accent: #d4af37; --accent-soft: rgba(212,175,55,0.14); --profit: #7bd88f; --loss: #ff7a6b; --on-fill: #000000; --grid: rgba(212,175,55,0.10); color-scheme: dark; }
 :root[data-theme="luxury"] h1, :root[data-theme="luxury"] .bal, :root[data-theme="luxury"] .score { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 :root[data-theme="luxury"] h1 { letter-spacing: 0.1em; text-transform: uppercase; font-size: 15px; }
@@ -359,6 +374,7 @@ select { font: inherit; }
 
 <div id="cine" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><div class="vig"></div><div class="grain"></div></div>
 
+<div id="cool" hidden><div class="cbox"><div class="cring"></div><h2>Cooldown</h2><p id="cmsg">2 losses in a row. Breathe and step away.</p><div class="ctime" id="ctime">30:00</div><p class="tmeta">Breathe in 4s, out 4s. Look at the chart later.</p><button type="button" class="b-accent" id="cclose">Okay, I will wait</button><button type="button" class="b-ghost" id="cskip" hidden>Unlock anyway</button></div></div>
 <div id="bgl" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 
@@ -407,6 +423,33 @@ select { font: inherit; }
     <div class="row" style="margin-top:12px"><span class="tmeta">100-trade test</span><span class="num tmeta" id="h100hn"></span></div>
     <div class="bar" style="margin-top:6px"><i id="h100hf"></i></div>
     <div class="tmeta" id="h100ht" style="margin-top:6px"></div>
+  </section>
+
+  <section class="card" id="xpcard" aria-label="Trader level">
+    <div class="row"><span class="label">Trader level</span><span class="num" id="xplv"></span></div>
+    <div class="bar" style="margin-top:10px"><i id="xpfill"></i></div>
+    <div class="tmeta" id="xpsub" style="margin-top:6px"></div>
+    <div class="badges" id="xpbadges"></div>
+  </section>
+
+  <section class="card" id="sclock" aria-label="Session clock">
+    <div class="row"><span class="label">Session clock</span><button type="button" class="b-ghost" id="salert" style="min-height:30px;padding:2px 10px;font-size:12px">Alerts off</button></div>
+    <div id="srows"></div>
+    <div class="tmeta" id="snote" style="margin-top:6px">Alerts work while the app is open.</div>
+  </section>
+
+  <section class="card" id="lotcalc" aria-label="Position size calculator">
+    <div class="row"><span class="label">Lot size calculator</span><span class="tmeta" id="calcbal"></span></div>
+    <div class="chips" id="calcmode" style="margin-top:10px"><button type="button" data-m="pct">Risk %</button><button type="button" data-m="usd">Risk $</button></div>
+    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div class="field"><label class="tmeta" for="cr" id="crl">Risk %</label><input id="cr" type="number" inputmode="decimal" step="any" min="0"></div>
+      <div class="field"><label class="tmeta" for="cd">SL distance (price points)</label><input id="cd" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 3.5"></div>
+      <div class="field"><label class="tmeta" for="ce">Entry (optional)</label><input id="ce" type="number" inputmode="decimal" step="any" placeholder="for TP levels"></div>
+      <div class="field"><label class="tmeta" for="cs">SL price (optional)</label><input id="cs" type="number" inputmode="decimal" step="any" placeholder="or type SL price"></div>
+    </div>
+    <div class="row" style="margin-top:14px"><span class="tmeta">Lot size</span><span class="num" id="clot" style="font-size:28px">-</span></div>
+    <div class="tmeta" id="lcnote" style="margin-top:6px"></div>
+    <div class="tmeta" id="ctp" style="margin-top:4px"></div>
   </section>
 
   <section class="stats" aria-label="Summary">
@@ -521,7 +564,32 @@ select { font: inherit; }
           <option value="OB">OB</option>
           <option value="FVG">FVG</option>
           <option value="BOS/CHoCH">BOS/CHoCH</option>
+          <option value="9/15 EMA cross">9/15 EMA cross</option>
+          <option value="EMA pullback">EMA pullback</option>
+          <option value="Support bounce">Support bounce</option>
+          <option value="Resistance reject">Resistance reject</option>
+          <option value="S/R break-retest">S/R break-retest</option>
         </select>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label class="tmeta" for="ema">9 / 15 EMA</label>
+          <select id="ema"><option value="">Not used</option><option value="Cross up">Cross up (9 above 15)</option><option value="Cross down">Cross down (9 below 15)</option><option value="Pullback to EMA">Pullback to EMA</option><option value="Against EMA">Against EMA trend</option></select>
+        </div>
+        <div class="field">
+          <label class="tmeta" for="sr">Support / Resistance</label>
+          <select id="sr"><option value="">No level</option><option value="At support">At support</option><option value="At resistance">At resistance</option><option value="S/R flip">S/R flip (retest)</option><option value="Mid-range">Mid-range (no level)</option></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label class="tmeta" for="mb">Mood before</label>
+          <select id="mb"><option value="">-</option><option>Calm</option><option>Confident</option><option>Anxious</option><option>FOMO</option><option>Angry</option><option>Tired</option></select>
+        </div>
+        <div class="field">
+          <label class="tmeta" for="ma">Mood after</label>
+          <select id="ma"><option value="">-</option><option>Calm</option><option>Confident</option><option>Anxious</option><option>FOMO</option><option>Angry</option><option>Tired</option></select>
+        </div>
       </div>
       <div class="field">
         <label class="tmeta" for="logic">1 line note</label>
@@ -626,6 +694,9 @@ select { font: inherit; }
     <div class="kpis" id="kpis"></div>
     <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
+    <div class="bsec"><div class="label">9/15 EMA wise</div><div id="bema"></div></div>
+    <div class="bsec"><div class="label">Support / Resistance wise</div><div id="bsr"></div></div>
+    <div class="bsec"><div class="label">Mood before trade</div><div id="bmood"></div></div>
     <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
     <div class="bsec"><div class="label">Day of week</div><div id="bweek"></div></div>
     <div class="bsec"><div class="label">After-loss behavior</div><div id="bafter"></div></div>
@@ -714,6 +785,7 @@ select { font: inherit; }
     </div>
     <div class="btns" style="margin-top:10px">
       <button type="button" class="b-accent" id="rshare">Share card (image)</button>
+      <button type="button" class="b-accent" id="rstory">Story poster (Instagram)</button>
       <button type="button" class="b-accent" id="rpdf">Save as PDF</button>
     </div>
     <p class="calc" id="rmsg" role="status"></p>
@@ -752,7 +824,7 @@ select { font: inherit; }
       <button type="button" data-b="chart">Chart glow</button>
       <button type="button" data-b="anim">Moving candles</button>
     </div>
-    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
+    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="coolbtn">Cooldown lock</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
@@ -1784,10 +1856,13 @@ select { font: inherit; }
     });
     breakdown('bsess', function (x) { return x.session; }, ['Asian', 'London', 'NY', 'London-NY overlap'], 'Choose a Session when adding a trade and it will show here.');
     breakdown('blogic', function (x) { return x.tag; }, ['Liquidity sweep', 'OB', 'FVG', 'BOS/CHoCH'], 'Choose a Logic tag when adding a trade and it will show here.');
+    breakdown('bema', function (x) { return x.ema; }, ['Cross up', 'Cross down', 'Pullback to EMA', 'Against EMA'], 'Pick a 9/15 EMA option when adding a trade and it will show here.');
+    breakdown('bsr', function (x) { return x.sr; }, ['At support', 'At resistance', 'S/R flip', 'Mid-range'], 'Pick a Support / Resistance option when adding a trade and it will show here.');
+    breakdown('bmood', function (x) { return x.mb; }, ['Calm', 'Confident', 'Anxious', 'FOMO', 'Angry', 'Tired'], 'Pick your mood before a trade and win rate by mood will show here.');
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
     breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
     breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
-    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula();
+    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula(); if (window.__calcRun) window.__calcRun(); if (window.__xp) window.__xp();
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -1976,6 +2051,7 @@ select { font: inherit; }
       var nt = str(x.note, 300); if (nt && !lg) o.note = nt;
       var slv = num(x.sl); if (slv !== null && x.sl !== '' && x.sl !== null) o.sl = slv;
       var ms = str(x.mist, 40); if (ms) o.mist = ms;
+      ['ema', 'sr', 'mb', 'ma'].forEach(function (k) { var v = str(x[k], 30); if (v) o[k] = v; });
       if (x.flag === true) o.flag = true;
       if (x.tm === 1) o.tm = 1;
       if (typeof x.chk === 'string' && /^[01]{5}$/.test(x.chk)) o.chk = x.chk;
@@ -2118,7 +2194,7 @@ select { font: inherit; }
       if (fs && tr0.session !== fs) continue;
       if (fm === '_any' ? !tr0.mist : (fm && tr0.mist !== fm)) continue;
       if (ff && !tr0.flag) continue;
-      if (q && [tr0.tag, tr0.logic, tr0.note, tr0.mist, tr0.session, tr0.dir].join(' ').toLowerCase().indexOf(q) < 0) continue;
+      if (q && [tr0.tag, tr0.logic, tr0.note, tr0.mist, tr0.session, tr0.dir, tr0.ema, tr0.sr, tr0.mb].join(' ').toLowerCase().indexOf(q) < 0) continue;
       shown++;
       (function (idx) {
         var tr = t[idx];
@@ -2127,7 +2203,7 @@ select { font: inherit; }
         var main = document.createElement('div'); main.className = 'tmain';
         var top = document.createElement('div');
         if (tr.dir) { var bd = document.createElement('span'); bd.className = 'badge ' + (tr.dir === 'Buy' ? 'buy' : 'sell'); bd.textContent = tr.dir; top.appendChild(bd); }
-        var note = document.createElement('span'); note.className = 'tnote'; note.textContent = [tr.tag, tr.logic || tr.note].filter(Boolean).join(' - ') || (tr.pl >= 0 ? 'Profit' : 'Loss');
+        var note = document.createElement('span'); note.className = 'tnote'; note.textContent = [tr.tag, tr.ema ? 'EMA ' + tr.ema : '', tr.sr, tr.logic || tr.note].filter(Boolean).join(' - ') || (tr.pl >= 0 ? 'Profit' : 'Loss');
         top.appendChild(note); main.appendChild(top);
         var parts = [];
         if (tr.entry !== undefined && tr.exit !== undefined) parts.push(tr.entry + ' \u2192 ' + tr.exit);
@@ -2405,7 +2481,7 @@ select { font: inherit; }
   }
   function resetForm() {
     ['ent', 'ext', 'lots', 'fees', 'amt', 'logic', 'sl'].forEach(function (i) { $(i).value = ''; });
-    $('sess').value = ''; $('ltag').value = ''; $('mist').value = '';
+    $('sess').value = ''; $('ltag').value = ''; $('mist').value = ''; $('ema').value = ''; $('sr').value = ''; $('mb').value = ''; $('ma').value = '';
     for (var i = 0; i < 5; i++) $('chk' + i).checked = false;
     setShot(null); $('shot').value = '';
     dir = ''; $('dirb').className = ''; $('dirs').className = '';
@@ -2426,6 +2502,7 @@ select { font: inherit; }
     if (tr.fees !== undefined) $('fees').value = tr.fees;
     if (tr.sl !== undefined) $('sl').value = tr.sl;
     $('sess').value = tr.session || ''; $('ltag').value = tr.tag || ''; $('mist').value = tr.mist || '';
+    $('ema').value = tr.ema || ''; $('sr').value = tr.sr || ''; $('mb').value = tr.mb || ''; $('ma').value = tr.ma || '';
     $('logic').value = tr.logic || tr.note || '';
     if (typeof tr.chk === 'string') for (var i = 0; i < 5; i++) $('chk' + i).checked = tr.chk.charAt(i) === '1';
     if (tr.entry === undefined || tr.exit === undefined) $('amt').value = Math.abs(tr.pl);
@@ -2474,6 +2551,10 @@ select { font: inherit; }
     if ($('sess').value) tr.session = $('sess').value;
     if ($('ltag').value) tr.tag = $('ltag').value;
     if ($('mist').value) tr.mist = $('mist').value;
+    if ($('ema').value) tr.ema = $('ema').value;
+    if ($('sr').value) tr.sr = $('sr').value;
+    if ($('mb').value) tr.mb = $('mb').value;
+    if ($('ma').value) tr.ma = $('ma').value;
     if (anyChk()) tr.chk = chkString();
     if (curImg) tr.img = curImg;
     var lg = $('logic').value.trim();
@@ -2484,17 +2565,20 @@ select { font: inherit; }
     resetForm();
     persist(); render();
     checkCelebrate();
+    if (!orig) coolCheck();
   }
 
   function addAuto() {
     var p = calcPL();
     if (p === null) { $('err').textContent = 'Choose Buy or Sell and fill in entry, exit and lots, or enter an amount below.'; return; }
+    if (coolActive() && !editId) { showCool(); return; }
     saveTrade(p);
   }
 
   function addManual(sign) {
     var v = numv('amt');
     if (v === null || v <= 0) { $('err').textContent = 'Enter an amount above 0, like 1.50.'; $('amt').focus(); return; }
+    if (coolActive() && !editId) { showCool(); return; }
     saveTrade(r2(sign * v));
   }
 
@@ -2536,6 +2620,7 @@ select { font: inherit; }
   $('pp-clear').onclick = function () { state.prop = null; persist(); render(); };
   $('rcsv').onclick = rcsv;
   $('fab').onclick = function () {
+    if (coolActive()) { showCool(); return; }
     showTab('journal');
     setTimeout(function () { var c = $('addcard'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
   };
@@ -2613,6 +2698,190 @@ select { font: inherit; }
   $('postbtn').onclick = function () { applyPoster(document.documentElement.getAttribute('data-poster') !== '1'); };
   applyPoster(document.documentElement.getAttribute('data-poster') !== '0');
 
+
+  /* Lot size calculator */
+  var calc = { m: 'pct', r: 1 };
+  try { var cs0 = JSON.parse(localStorage.getItem('ct-calc') || '{}'); if (cs0.m === 'usd' || cs0.m === 'pct') calc.m = cs0.m; if (cs0.r > 0) calc.r = cs0.r; } catch (e) {}
+  function calcSave() { try { localStorage.setItem('ct-calc', JSON.stringify(calc)); } catch (e) {} }
+  function calcRun() {
+    var bals = balances(), bal = bals[bals.length - 1], cz = contractSize();
+    $('calcbal').textContent = 'Balance ' + money(bal);
+    $('crl').textContent = calc.m === 'pct' ? 'Risk % of balance' : 'Risk in $';
+    Array.prototype.forEach.call($('calcmode').children, function (b) { b.className = b.getAttribute('data-m') === calc.m ? 'on' : ''; });
+    var rv = parseFloat($('cr').value), dist = parseFloat($('cd').value), en = parseFloat($('ce').value), sl = parseFloat($('cs').value);
+    if (!(dist > 0) && en > 0 && sl > 0 && en !== sl) dist = Math.abs(en - sl);
+    var out = $('clot'), note = $('lcnote'), tp = $('ctp'); tp.textContent = '';
+    if (!(rv > 0) || !(dist > 0)) { out.textContent = '-'; note.textContent = 'Enter risk and SL distance.'; return; }
+    var riskUsd = calc.m === 'pct' ? bal * rv / 100 : rv;
+    var perLot = dist * cz, raw = riskUsd / perLot, lots = Math.floor(raw * 100 + 1e-9) / 100;
+    if (lots < 0.01) {
+      out.textContent = '0.01';
+      var min = r2(0.01 * perLot);
+      note.textContent = 'Min lot 0.01 risks ' + money(min) + ' (more than your ' + money(r2(riskUsd)) + '). Reduce SL or skip.';
+      return;
+    }
+    out.textContent = lots.toFixed(2);
+    var act = r2(lots * perLot), msg = 'Risk ' + money(act) + ' (' + (bal > 0 ? (act / bal * 100).toFixed(2) : '0') + '% of balance)';
+    if (state.dll > 0 && act > state.dll) msg += '. Above your daily loss limit ' + money(state.dll) + '!';
+    else if (bal > 0 && act / bal > 0.05) msg += '. High risk, over 5%.';
+    note.textContent = msg;
+    if (en > 0) {
+      var dirn = (sl > 0 && sl > en) ? -1 : 1, parts = [];
+      [1, 2, 3].forEach(function (k) { parts.push(k + 'R ' + (en + dirn * dist * k).toFixed(2) + ' (+' + money(r2(act * k)) + ')'); });
+      tp.textContent = (dirn > 0 ? 'Buy' : 'Sell') + ' TP: ' + parts.join(' · ');
+    }
+  }
+  $('calcmode').addEventListener('click', function (e) { var m = e.target.getAttribute && e.target.getAttribute('data-m'); if (!m) return; calc.m = m; calc.r = m === 'pct' ? 1 : (state.dll > 0 ? state.dll : 2); $('cr').value = String(calc.r); calcSave(); calcRun(); });
+  ['cr', 'cd', 'ce', 'cs'].forEach(function (id) { $(id).addEventListener('input', function () { if (id === 'cr') { var v = parseFloat($('cr').value); if (v > 0) { calc.r = v; calcSave(); } } if (id === 'cd' && $('cd').value) { $('cs').value = ''; } calcRun(); }); });
+  $('cr').value = String(calc.r);
+  window.__calcRun = calcRun;
+  calcRun();
+
+  /* Level + XP */
+  var LEVELS = [[0, 'Rookie'], [100, 'Scalper'], [300, 'Sniper'], [700, 'Pro'], [1500, 'Legend']];
+  var BAD = { 'Revenge trade': 1, 'Overtrade': 1, 'FOMO': 1, 'Oversized': 1 };
+  function renderXP() {
+    var xp = 0, byDay = {}, n = state.trades.length, runChk = 0, bestChk = 0;
+    state.trades.forEach(function (t) {
+      xp += 10;
+      if (t.chk === '11111') { xp += 10; runChk++; if (runChk > bestChk) bestChk = runChk; } else runChk = 0;
+      if (t.sl !== undefined) xp += 5;
+      if (!t.mist) xp += 10;
+      var k = t.t ? dayKey(t.t) : '';
+      if (!k) return;
+      if (!byDay[k]) byDay[k] = { pl: 0, bad: false, ts: t.t };
+      byDay[k].pl += t.pl;
+      if (t.mist && BAD[t.mist]) byDay[k].bad = true;
+    });
+    var keys = Object.keys(byDay).sort(function (a, b) { return byDay[a].ts - byDay[b].ts; }), clean = 0, bestClean = 0;
+    keys.forEach(function (k) {
+      if (!(state.dll > 0) || byDay[k].pl > -state.dll) xp += 20;
+      if (!byDay[k].bad) { clean++; if (clean > bestClean) bestClean = clean; } else clean = 0;
+    });
+    var li = 0;
+    LEVELS.forEach(function (l, i) { if (xp >= l[0]) li = i; });
+    var nxt = LEVELS[li + 1], cur = LEVELS[li];
+    $('xplv').textContent = 'Lv ' + (li + 1) + ' ' + cur[1];
+    $('xpfill').style.width = (nxt ? Math.min(100, (xp - cur[0]) / (nxt[0] - cur[0]) * 100) : 100) + '%';
+    $('xpsub').textContent = xp + ' XP' + (nxt ? ' · ' + (nxt[0] - xp) + ' to ' + nxt[1] : ' · max level') + ' · clean-day streak ' + clean;
+    var B = [['First trade', n >= 1], ['10 trades', n >= 10], ['50 trades', n >= 50], ['100 trades', n >= 100], ['5 full checklists in a row', bestChk >= 5], ['7 clean days', bestClean >= 7]];
+    var bx = $('xpbadges'); bx.textContent = '';
+    B.forEach(function (b) { var s = document.createElement('span'); s.textContent = (b[1] ? '★ ' : '') + b[0]; s.className = b[1] ? 'on' : ''; bx.appendChild(s); });
+  }
+  window.__xp = renderXP;
+
+  /* Cooldown lock */
+  var coolOn = true, coolTick = 0;
+  try { coolOn = localStorage.getItem('ct-cool') !== '0'; } catch (e) {}
+  function coolUntil() { try { return parseInt(localStorage.getItem('ct-coolt') || '0', 10) || 0; } catch (e) { return 0; } }
+  function coolActive() { return coolOn && Date.now() < coolUntil(); }
+  function coolDraw() {
+    var left = coolUntil() - Date.now();
+    if (left <= 0) { $('cool').hidden = true; clearInterval(coolTick); return; }
+    var s = Math.ceil(left / 1000); $('ctime').textContent = pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+    $('cskip').hidden = left > 25 * 60 * 1000;
+  }
+  function showCool() { $('cool').hidden = false; coolDraw(); clearInterval(coolTick); coolTick = setInterval(coolDraw, 1000); }
+  function coolCheck() {
+    if (!coolOn) return;
+    var n = state.trades.length; if (n < 2) return;
+    var a = state.trades[n - 1], b = state.trades[n - 2];
+    if (a.pl < 0 && b.pl < 0 && a.t && Date.now() - a.t < 3 * 3600 * 1000 && !isExample) {
+      try { localStorage.setItem('ct-coolt', String(Date.now() + 30 * 60 * 1000)); } catch (e) {}
+      showCool();
+    }
+  }
+  $('cclose').onclick = function () { $('cool').hidden = true; showTab('dash'); };
+  $('cskip').onclick = function () { try { localStorage.setItem('ct-coolt', '0'); } catch (e) {} $('cool').hidden = true; clearInterval(coolTick); };
+  function applyCool(on) { coolOn = on; try { localStorage.setItem('ct-cool', on ? '1' : '0'); } catch (e) {} $('coolbtn').className = on ? 'on' : ''; if (!on) { $('cool').hidden = true; } }
+  $('coolbtn').onclick = function () { applyCool(!coolOn); toast(coolOn ? 'Cooldown lock on' : 'Cooldown lock off'); };
+  applyCool(coolOn);
+  if (coolActive()) showCool();
+
+  /* Session clock */
+  var SESS = [['Asia (Tokyo)', 'Asia/Tokyo', 9, 0], ['London', 'Europe/London', 8, 0], ['New York', 'America/New_York', 8, 0]], SDUR = 9 * 3600 * 1000;
+  function tzp(ts, tz) {
+    var f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short' }), o = {};
+    f.formatToParts(new Date(ts)).forEach(function (p) { o[p.type] = p.value; });
+    return o;
+  }
+  function tzAsUtc(ts, tz) { var q = tzp(ts, tz); return Date.UTC(+q.year, +q.month - 1, +q.day, +q.hour % 24, +q.minute); }
+  function opensOn(tz, hh, mm, dayOff, now) {
+    var p = tzp(now, tz), base = Date.UTC(+p.year, +p.month - 1, +p.day + dayOff, hh, mm);
+    var ts = base - (tzAsUtc(base, tz) - base);
+    ts = base - (tzAsUtc(ts, tz) - ts);
+    var wd = tzp(ts, tz).weekday;
+    return { ts: ts, wk: wd !== 'Sat' && wd !== 'Sun' };
+  }
+  function sessTimes(s, now) {
+    var prev = null, next = null, d;
+    for (d = -3; d <= 4; d++) { var o = opensOn(s[1], s[2], s[3], d, now); if (!o.wk) continue; if (o.ts <= now) prev = o.ts; else if (!next) next = o.ts; }
+    return { prev: prev, next: next };
+  }
+  function fmtLeft(ms) { var m = Math.max(0, Math.round(ms / 60000)), hh = Math.floor(m / 60); return (hh ? hh + 'h ' : '') + (m % 60) + 'm'; }
+  var salertOn = false, notified = {};
+  try { salertOn = localStorage.getItem('ct-salert') === '1'; } catch (e) {}
+  function renderSess() {
+    var now = Date.now(), box = $('srows'); box.textContent = '';
+    SESS.forEach(function (s) {
+      var t = sessTimes(s, now), open = t.prev && now - t.prev < SDUR, row = document.createElement('div'); row.className = 'srow';
+      var a = document.createElement('span'), b = document.createElement('span');
+      a.textContent = s[0] + (t.next ? ' · ' + new Date(t.next).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '');
+      if (open) { b.className = 'sopen'; b.textContent = 'Open · ' + fmtLeft(t.prev + SDUR - now) + ' left'; } else b.textContent = t.next ? 'Opens in ' + fmtLeft(t.next - now) : '-';
+      row.appendChild(a); row.appendChild(b); box.appendChild(row);
+      if (salertOn && t.next) {
+        var left = t.next - now, key = s[0] + t.next;
+        if (left <= 15 * 60000 && left > 0 && !notified[key]) {
+          notified[key] = 1; toast(s[0] + ' opens in ' + fmtLeft(left));
+          try { if (window.Notification && Notification.permission === 'granted') new Notification(s[0] + ' session opens in ' + fmtLeft(left)); } catch (e) {}
+        }
+      }
+    });
+    $('salert').textContent = salertOn ? 'Alerts on' : 'Alerts off'; $('salert').className = 'b-ghost' + (salertOn ? ' on' : '');
+  }
+  $('salert').onclick = function () {
+    salertOn = !salertOn; try { localStorage.setItem('ct-salert', salertOn ? '1' : '0'); } catch (e) {}
+    if (salertOn) { try { if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {} }
+    renderSess();
+  };
+  try { renderSess(); } catch (e) { $('srows').textContent = 'Session clock not supported on this browser.'; }
+  setInterval(function () { try { renderSess(); } catch (e) {} }, 30000);
+
+  /* Story poster 1080x1920 */
+  function storyCard() {
+    var list = rptTrades(rptPeriod), r = rptRange(rptPeriod), st = computeStats(list, 0);
+    if (!st.n) { $('rmsg').textContent = 'No trades in this period.'; return; }
+    var W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H; var x = c.getContext('2d');
+    var g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#05080f'); g.addColorStop(0.55, '#10202a'); g.addColorStop(1, '#2a1406'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    var gl = x.createRadialGradient(W / 2, 520, 40, W / 2, 520, 700); gl.addColorStop(0, 'rgba(255,160,60,0.30)'); gl.addColorStop(1, 'rgba(255,160,60,0)'); x.fillStyle = gl; x.fillRect(0, 0, W, H);
+    var good = st.net >= 0, col = good ? '#52e08c' : '#ff7a6b';
+    function draw(logo) {
+      x.textAlign = 'center';
+      if (logo) x.drawImage(logo, W / 2 - 110, 120, 220, 220);
+      x.fillStyle = '#ffffff'; x.font = '700 54px Georgia, serif'; x.fillText('THE COLLEGE TRADER', W / 2, 410);
+      x.fillStyle = '#ffd27a'; x.font = 'italic 34px Georgia, serif'; x.fillText('Turning Data Into Decisions.', W / 2, 462);
+      x.fillStyle = '#9db0a7'; x.font = '600 42px system-ui, sans-serif'; x.fillText(r.label.toUpperCase() + ' RESULT', W / 2, 640);
+      x.fillStyle = col; x.font = '700 200px ui-monospace, Menlo, monospace'; x.fillText(signed(st.net), W / 2, 820);
+      var tiles = [['TRADES', String(st.n)], ['WIN RATE', Math.round(st.wr) + '%'], ['PROFIT FACTOR', fmtPF(st)], [st.rn ? 'AVG R' : 'BEST TRADE', st.rn ? fmtR(st.rsum / st.rn) : signed(st.best.pl)]];
+      tiles.forEach(function (tl, i) {
+        var bx = 70 + (i % 2) * 485, by = 930 + Math.floor(i / 2) * 210;
+        x.fillStyle = 'rgba(255,255,255,0.07)'; x.fillRect(bx, by, 450, 180);
+        x.fillStyle = '#9db0a7'; x.font = '30px system-ui, sans-serif'; x.fillText(tl[0], bx + 225, by + 55);
+        x.fillStyle = '#ffffff'; x.font = '700 70px ui-monospace, Menlo, monospace'; x.fillText(tl[1], bx + 225, by + 140);
+      });
+      var cum = [0]; list.forEach(function (t) { cum.push(cum[cum.length - 1] + t.pl); });
+      var lo = Math.min.apply(null, cum), hi = Math.max.apply(null, cum), rg = (hi - lo) || 1, bx0 = 90, by0 = 1420, bw = 900, bh = 260;
+      x.strokeStyle = col; x.lineWidth = 7; x.lineJoin = 'round'; x.beginPath();
+      cum.forEach(function (v, i) { var px = bx0 + bw * (cum.length === 1 ? 0 : i / (cum.length - 1)), py = by0 + bh - bh * (v - lo) / rg; if (i) x.lineTo(px, py); else x.moveTo(px, py); });
+      x.stroke();
+      x.fillStyle = '#9db0a7'; x.font = '30px system-ui, sans-serif'; x.fillText('Profit curve', W / 2, 1400);
+      x.fillStyle = '#ffd27a'; x.font = '600 40px system-ui, sans-serif'; x.fillText('@thecollegetrader25', W / 2, 1810);
+      x.fillStyle = '#6f7f78'; x.font = '26px system-ui, sans-serif'; x.fillText('Personal journal. Not financial advice.', W / 2, 1860);
+      c.toBlob(function (b) { if (b) outFile(b, 'story-' + rptPeriod + '-' + stamp() + '.png', 'My trading result', 'rmsg'); else $('rmsg').textContent = 'Could not create the image.'; }, 'image/png');
+    }
+    var im = new Image(); im.onload = function () { draw(im); }; im.onerror = function () { draw(null); }; im.src = 'logo.png';
+  }
+  $('rstory').onclick = storyCard;
   /* Diwali crackers */
   var dw = { ctx: null, snd: true, raf: 0, last: 0, parts: [], on: false, w: 0, h: 0, next: 0 };
   try { dw.snd = localStorage.getItem('ct-dwsnd') !== '0'; } catch (e) {}
