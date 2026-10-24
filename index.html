@@ -120,9 +120,11 @@
 #cool .ctime { font-family: ui-monospace, Menlo, monospace; font-size: 44px; }
 @media (prefers-reduced-motion: reduce) { #cool .cring { animation: none; } }
 
-#poster .pthought { margin: 12px auto 0; max-width: 300px; min-height: 44px; font-family: Georgia, serif; font-style: italic; font-size: 16px; line-height: 1.35; color: #ffe2b0; transition: opacity 0.4s; cursor: pointer; }
+#poster .pthought { margin: 12px auto 0; max-width: 320px; min-height: 104px; color: #ffe2b0; transition: opacity 0.4s; cursor: pointer; }
+#poster .pthought .sk { font-size: 19px; line-height: 1.4; font-weight: 600; color: #ffd27a; }
+#poster .pthought .mn { margin-top: 6px; font-size: 13px; line-height: 1.4; color: #ecd9b6; font-style: italic; }
 #poster .pthought.fade { opacity: 0; }
-#poster .pthought small { display: block; margin-top: 6px; font-style: normal; font-family: system-ui, sans-serif; font-size: 11px; letter-spacing: 0.14em; color: #b9c4d8; }
+#poster .pthought small { display: block; margin-top: 8px; font-size: 10px; letter-spacing: 0.14em; color: #b9c4d8; }
 #moretools, #disc { padding: 0; }
 #disc > summary { cursor: pointer; padding: 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 #disc > summary::-webkit-details-marker { display: none; }
@@ -3165,14 +3167,42 @@ select { font: inherit; }
   applyDiwali(document.documentElement.getAttribute('data-diwali') !== '0');
   document.addEventListener('touchstart', function u() { audio(); document.removeEventListener('touchstart', u); }, { passive: true });
   document.addEventListener('click', function u2() { audio(); document.removeEventListener('click', u2); });
-  var THOUGHTS = ['Plan the trade, trade the plan.', 'Capital bachao pehle, profit baad mein.', 'Ek achha trade, paanch jabardasti ke trade se behtar.', 'Loss trading ka kharcha hai, galti nahi.', 'Market kal bhi khulega. Aaj ka loss kal ka mauka hai.', 'Stop loss darr nahi, samajhdari hai.', 'Jitna bada lot, utni badi zimmedari.', 'Jaldi ka profit, der ka pachtava.', 'Discipline wo hai jo tab kaam aaye jab mann na kare.', 'Revenge trade market se nahi, apne aap se badla hai.', 'Data jhooth nahi bolta. Apna journal padho.', 'Win rate nahi, expectancy dekho.', 'Trade se pehle poochho: ye meri strategy hai ya meri umeed?', 'Chhote loss, bade profit. Yahi poora khel hai.', 'Patience bhi ek position hai.', 'FOMO ka ilaaj hai plan.', 'Sabr ka phal market mein bhi meetha hota hai.', 'Roz ek hi sawal: kya maine apne rules follow kiye?', 'Jo risk neend kharab kare, wo risk bada hai.', 'Consistency chamak se nahi, aadat se aati hai.', 'Turning Data Into Decisions.'];
+  var THOUGHTS = [
+    ['कर्मण्येवाधिकारस्ते मा फलेषु कदाचन', '2.47', 'Adhikar sirf karm par hai, phal par kabhi nahi. Trade lo, result chhodo.'],
+    ['समत्वं योग उच्यते', '2.48', 'Jeet-haar mein sam rehna hi yog hai.'],
+    ['योगः कर्मसु कौशलम्', '2.50', 'Karm mein kushalta hi yog hai. Skill banao.'],
+    ['आगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत', '2.14', 'Sukh-dukh aate-jaate hain. Profit-loss ko sehna seekho.'],
+    ['सुखदुःखे समे कृत्वा लाभालाभौ जयाजयौ', '2.38', 'Laabh-haani aur jeet-haar ko saman maano.'],
+    ['दुःखेष्वनुद्विग्नमनाः सुखेषु विगतस्पृहः', '2.56', 'Dukh mein ghabrao mat, sukh mein lalach mat karo.'],
+    ['क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः', '2.63', 'Krodh se moh, moh se yaad ka bhram. Revenge trade ki yahi jad hai.'],
+    ['स्वल्पमप्यस्य धर्मस्य त्रायते महतो भयात्', '2.40', 'Is raah ka thoda abhyas bhi bade bhay se bachata hai.'],
+    ['नियतं कुरु कर्म त्वं कर्म ज्यायो ह्यकर्मणः', '3.8', 'Niyam se karm karo. Rules follow karna sabse bada karm hai.'],
+    ['काम एष क्रोध एष रजोगुणसमुद्भवः', '3.37', 'Lobh aur krodh, trader ke sabse bade shatru.'],
+    ['न हि ज्ञानेन सदृशं पवित्रमिह विद्यते', '4.38', 'Gyan ke samaan pavitra yahan kuch nahi. Journal padho.'],
+    ['उद्धरेदात्मनात्मानं नात्मानमवसादयेत्', '6.5', 'Khud ko khud uthao, khud ko girne mat do.'],
+    ['युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु', '6.17', 'Santulit jeevan aur santulit prayas. Overtrading nahi.'],
+    ['यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्', '6.26', 'Jahan chanchal man bhage, use wapas khinch lao. FOMO ka ilaaj.'],
+    ['अभ्यासेन तु कौन्तेय वैराग्येण च गृह्यते', '6.35', 'Abhyas aur vairagya se man vash mein aata hai.'],
+    ['बन्धुरात्मात्मनस्तस्य येनात्मैवात्मना जितः', '6.6', 'Jisne apna man jeeta, uska man hi uska mitra hai.'],
+    ['सहजं कर्म कौन्तेय सदोषमपि न त्यजेत्', '18.48', 'Kami hone par bhi apna kaam mat chhodo. Sudhaar karte raho.'],
+    ['अशान्तस्य कुतः सुखम्', '2.66', 'Ashant man ko sukh kahan? Tilt mein trade mat lo.'],
+    ['आपूर्यमाणमचलप्रतिष्ठं समुद्रमापः प्रविशन्ति यद्वत्', '2.70', 'Nadiyan aati rahein, samudra sthir rehta hai. Aisa sthir raho.'],
+    ['तस्मादसक्तः सततं कार्यं कर्म समाचर', '3.19', 'Anasakt hokar apna kartavya karte raho.'],
+    ['क्षुद्रं हृदयदौर्बल्यं त्यक्त्वोत्तिष्ठ परन्तप', '2.3', 'Hriday ki chhoti kamzori chhodo, uth khade ho.']
+  ];
   var thIdx = Math.floor(Date.now() / 86400000) % THOUGHTS.length, thTimer = 0;
   function showThought(i, instant) {
     var el = $('pthought'); thIdx = (i + THOUGHTS.length) % THOUGHTS.length;
-    function put() { el.textContent = ''; el.appendChild(document.createTextNode('\u201C' + THOUGHTS[thIdx] + '\u201D')); var s = document.createElement('small'); s.textContent = 'THOUGHT ' + (thIdx + 1) + ' / ' + THOUGHTS.length; el.appendChild(s); el.classList.remove('fade'); }
+    function put() {
+      var t = THOUGHTS[thIdx]; el.textContent = '';
+      var a = document.createElement('div'); a.className = 'sk'; a.textContent = t[0];
+      var m = document.createElement('div'); m.className = 'mn'; m.textContent = t[2];
+      var s = document.createElement('small'); s.textContent = 'BHAGAVAD GITA ' + t[1] + '  ·  ' + (thIdx + 1) + ' / ' + THOUGHTS.length;
+      el.appendChild(a); el.appendChild(m); el.appendChild(s); el.classList.remove('fade');
+    }
     if (instant || REDUCED) put(); else { el.classList.add('fade'); setTimeout(put, 400); }
   }
-  function thStart() { clearInterval(thTimer); thTimer = setInterval(function () { if (document.visibilityState !== 'hidden') showThought(thIdx + 1); }, 9000); }
+  function thStart() { clearInterval(thTimer); thTimer = setInterval(function () { if (document.visibilityState !== 'hidden') showThought(thIdx + 1); }, 12000); }
   $('pthought').onclick = function () { showThought(thIdx + 1); thStart(); };
   showThought(thIdx, true); thStart();
   (function () { var hr = new Date().getHours(); $('pgreet').textContent = (hr < 5 ? 'Late night, trader' : hr < 12 ? 'Good morning, trader' : hr < 17 ? 'Good afternoon, trader' : hr < 21 ? 'Good evening, trader' : 'Night session, trader'); })();
