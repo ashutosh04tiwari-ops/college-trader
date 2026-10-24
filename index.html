@@ -141,7 +141,7 @@ button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 44px; b
 .cal-cell.loss { background: color-mix(in srgb, var(--loss) 20%, transparent); }
 .cal-cell.today { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cal-d { font-size: 11px; color: var(--ink-2); }
-.cal-v { font-family: var(--font-num); font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.cal-v { font-family: var(--font-num); font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .cal-sum { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
 .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -226,6 +226,19 @@ select { font: inherit; }
 .mx .ms { font-size: 12px; color: var(--ink-2); }
 .mx .ok { position: absolute; top: 8px; right: 10px; font-size: 16px; color: var(--accent); }
 .mx .good { border: 2px solid var(--accent); }
+.hero { background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 24%, var(--surface)) 0%, var(--surface) 62%); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; right: -50px; top: -50px; width: 170px; height: 170px; border-radius: 50%; background: var(--accent); opacity: 0.12; filter: blur(34px); pointer-events: none; }
+.hero .bal { font-size: 46px; }
+.hero > * { position: relative; z-index: 1; }
+.hrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tbadge { font-family: var(--font-num); font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+.tbadge.pos { background: color-mix(in srgb, var(--profit) 18%, transparent); border-color: var(--profit); }
+.tbadge.neg { background: color-mix(in srgb, var(--loss) 18%, transparent); border-color: var(--loss); }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 80; pointer-events: none; }
+#toast { position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 85; background: var(--accent); color: var(--on-fill); font-weight: 700; padding: 10px 18px; border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); max-width: 90vw; text-align: center; }
+.cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)) 50px; }
+.cal-cell.wk { background: transparent; border: 1px dashed var(--line); }
+.cal-cell { transition: transform 0.15s; }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -262,7 +275,7 @@ select { font: inherit; }
   <div id="banner2" class="note-banner" hidden>Showing example trades. Open the Journal tab and add your first real trade to replace them.</div>
   <section class="card hero" aria-label="Account balance and progress to target">
     <div>
-      <div class="label">Balance</div>
+      <div class="hrow"><div class="label">Balance</div><span class="tbadge" id="todaybadge" hidden></span></div>
       <div class="bal" id="bal">$125.00</div>
     </div>
     <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><i id="barfill"></i></div>
@@ -635,6 +648,8 @@ select { font: inherit; }
   </nav>
   <button type="button" class="fab" id="fab" aria-label="Add trade">+</button>
   <div id="printarea"></div>
+  <canvas id="confetti" hidden></canvas>
+  <div id="toast" role="status" hidden></div>
   <div id="viewer" hidden><img id="viewerimg" alt="Chart screenshot"></div>
   <div id="lock" hidden>
     <img src="logo.png" alt="" width="80" height="80">
@@ -693,6 +708,66 @@ select { font: inherit; }
     return out;
   }
 
+  var REDUCED = false;
+  try { REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  var firstCount = true;
+  function countTo(el, target, fmt) {
+    if (el._to === target) return;
+    var from = el._to === undefined ? 0 : el._to; el._to = target;
+    if (el._raf) cancelAnimationFrame(el._raf);
+    if (REDUCED || typeof requestAnimationFrame !== 'function') { el.textContent = fmt(target); return; }
+    var delay = firstCount ? 900 : 0, t0 = null;
+    el.textContent = fmt(from);
+    function step(ts) {
+      if (t0 === null) t0 = ts + delay;
+      var k = (ts - t0) / 700;
+      if (k < 0) { el._raf = requestAnimationFrame(step); return; }
+      if (k >= 1) { el.textContent = fmt(target); el._raf = null; return; }
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (target - from) * e);
+      el._raf = requestAnimationFrame(step);
+    }
+    el._raf = requestAnimationFrame(step);
+  }
+
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, 3800);
+  }
+
+  function confetti() {
+    if (REDUCED) return;
+    var c = $('confetti'); c.hidden = false;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    var x = c.getContext('2d'), cols = ['#4cc9a8', '#52cc7c', '#e0a030', '#ffffff', '#f27a72'], ps = [], i;
+    for (i = 0; i < 110; i++) ps.push({ x: c.width / 2 + (Math.random() - 0.5) * 80, y: c.height * 0.35, vx: (Math.random() - 0.5) * 11, vy: -Math.random() * 12 - 3, s: 5 + Math.random() * 6, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, c: cols[i % cols.length] });
+    var start = null;
+    function frame(ts) {
+      if (start === null) start = ts;
+      x.clearRect(0, 0, c.width, c.height);
+      ps.forEach(function (p) { p.vy += 0.28; p.x += p.vx; p.y += p.vy; p.vx *= 0.99; p.r += p.vr; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * 0.6); x.restore(); });
+      if (ts - start < 2600) requestAnimationFrame(frame); else { x.clearRect(0, 0, c.width, c.height); c.hidden = true; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function checkCelebrate() {
+    if (isExample) return;
+    var bal = balances(), last = bal[bal.length - 1], done = {};
+    try { done = JSON.parse(localStorage.getItem('ct-cele') || '{}') || {}; } catch (e) {}
+    var msg = '';
+    var tk = 'T' + state.start + '|' + state.target;
+    if (state.target > state.start && last >= state.target) { if (!done[tk]) { done[tk] = 1; msg = 'Target reached! Lock it in.'; } }
+    var g = state.mgoal || 0;
+    if (g > 0) {
+      var now = new Date(), mp = 0;
+      state.trades.forEach(function (x) { if (x.t) { var d = new Date(x.t); if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) mp = r2(mp + x.pl); } });
+      var gk = 'G' + now.getFullYear() + '-' + now.getMonth() + '|' + g;
+      if (mp >= g && !done[gk]) { done[gk] = 1; msg = msg ? msg + ' Monthly goal too!' : 'Monthly goal reached!'; }
+    }
+    if (msg) { try { localStorage.setItem('ct-cele', JSON.stringify(done)); } catch (e) {} toast(msg); confetti(); }
+  }
+
   function render() {
     var bal = balances();
     var last = bal[bal.length - 1];
@@ -700,8 +775,11 @@ select { font: inherit; }
     var net = r2(t.reduce(function (s, x) { return s + x.pl; }, 0));
     var wins = t.filter(function (x) { return x.pl > 0; }).length;
 
-    $('bal').textContent = money(last);
-    $('hbal').textContent = money(last);
+    countTo($('bal'), last, money);
+    countTo($('hbal'), last, money);
+    var tn = todayNet(), tb = $('todaybadge');
+    tb.hidden = isExample || !state.trades.some(function (x) { return x.t && dayKey(x.t) === dayKey(Date.now()); });
+    tb.textContent = signed(tn) + ' today'; tb.className = 'tbadge ' + (tn > 0 ? 'pos' : tn < 0 ? 'neg' : '');
     $('startlbl').textContent = 'Start ' + money(state.start);
     $('targetlbl').textContent = 'Target ' + money(state.target);
     var span = state.target - state.start;
@@ -713,10 +791,10 @@ select { font: inherit; }
       : 'Set a target above your start balance.';
 
     var netEl = $('net');
-    netEl.textContent = signed(net);
+    countTo(netEl, net, signed);
     netEl.className = 'v ' + (net > 0 ? 'pos' : net < 0 ? 'neg' : '');
-    $('cnt').textContent = String(t.length);
-    $('wr').textContent = t.length ? Math.round((wins / t.length) * 100) + '%' : '0%';
+    countTo($('cnt'), t.length, function (v) { return String(Math.round(v)); });
+    countTo($('wr'), t.length ? (wins / t.length) * 100 : 0, function (v) { return Math.round(v) + '%'; });
     if (t.length) {
       var pls = t.map(function (x) { return x.pl; });
       $('bw').textContent = signed(Math.max.apply(null, pls)) + ' / ' + signed(Math.min.apply(null, pls));
@@ -1453,24 +1531,40 @@ select { font: inherit; }
     for (k in byDay) { tot = r2(tot + byDay[k]); if (byDay[k] > 0) wins++; else if (byDay[k] < 0) losses++; }
     $('caltitle').textContent = new Date(y, m, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     var grid = $('calgrid'); grid.textContent = '';
-    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (n) {
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Week'].forEach(function (n) {
       var e = document.createElement('div'); e.className = 'cal-dow'; e.textContent = n; grid.appendChild(e);
     });
     var lead = (new Date(y, m, 1).getDay() + 6) % 7;
-    var dim = new Date(y, m + 1, 0).getDate(), i;
+    var dim = new Date(y, m + 1, 0).getDate(), i, mx = 0, wsum = 0, wcount = 0;
+    for (k in byDay) if (Math.abs(byDay[k]) > mx) mx = Math.abs(byDay[k]);
+    function short(v) { var a = Math.abs(v); return (v < 0 ? '-' : '+') + (a >= 100 ? a.toFixed(0) : a >= 10 ? a.toFixed(1) : a.toFixed(2)); }
+    function weekCell() {
+      var w = document.createElement('div'); w.className = 'cal-cell wk';
+      var wl = document.createElement('div'); wl.className = 'cal-d'; wl.textContent = 'Total'; w.appendChild(wl);
+      if (wcount) { var wv = document.createElement('div'); wv.className = 'cal-v ' + (wsum >= 0 ? 'pos' : 'neg'); wv.textContent = short(r2(wsum)); w.appendChild(wv); }
+      grid.appendChild(w); wsum = 0; wcount = 0;
+    }
     for (i = 0; i < lead; i++) { var b = document.createElement('div'); b.className = 'cal-cell empty'; grid.appendChild(b); }
     for (i = 1; i <= dim; i++) {
       var c = document.createElement('div');
       var v = byDay[i];
-      c.className = 'cal-cell' + (v > 0 ? ' win' : v < 0 ? ' loss' : '') + (y === now.getFullYear() && m === now.getMonth() && i === now.getDate() ? ' today' : '');
+      c.className = 'cal-cell' + (y === now.getFullYear() && m === now.getMonth() && i === now.getDate() ? ' today' : '');
       var dn = document.createElement('div'); dn.className = 'cal-d'; dn.textContent = String(i); c.appendChild(dn);
       if (v !== undefined) {
-        var vv = document.createElement('div'); vv.className = 'cal-v ' + (v >= 0 ? 'pos' : 'neg');
-        vv.textContent = (v < 0 ? '-' : '+') + Math.abs(v).toFixed(2);
+        var al = mx ? Math.round(14 + 56 * Math.abs(v) / mx) : 14;
+        if (v !== 0) c.style.background = 'color-mix(in srgb, var(--' + (v > 0 ? 'profit' : 'loss') + ') ' + al + '%, transparent)';
+        var vv = document.createElement('div'); vv.className = 'cal-v ' + (al > 45 ? '' : v >= 0 ? 'pos' : 'neg');
+        vv.textContent = short(v);
         c.appendChild(vv);
         c.setAttribute('aria-label', 'Day ' + i + ': ' + signed(v));
+        wsum += v; wcount++;
       }
       grid.appendChild(c);
+      var pos = lead + i - 1;
+      if (pos % 7 === 6 || i === dim) {
+        for (var q = pos % 7; q < 6 && i === dim; q++) { var pad0 = document.createElement('div'); pad0.className = 'cal-cell empty'; grid.appendChild(pad0); }
+        weekCell();
+      }
     }
     var sum = $('calsum'); sum.textContent = '';
     var any = wins + losses > 0 || Object.keys(byDay).length > 0;
@@ -1668,6 +1762,7 @@ select { font: inherit; }
     state.cash.sort(function (a, b) { return a.t - b.t; });
     $('camt').value = ''; $('cnote').value = ''; $('cerr').textContent = ''; setCashDate();
     persist(); render();
+    checkCelebrate();
   }
   function removeCash(id) {
     state.cash = (state.cash || []).filter(function (x) { return x.id !== id; });
@@ -2072,6 +2167,7 @@ select { font: inherit; }
     state.trades.sort(function (a, b) { return (a.t || 0) - (b.t || 0); });
     resetForm();
     persist(); render();
+    checkCelebrate();
   }
 
   function addAuto() {
@@ -2241,6 +2337,7 @@ select { font: inherit; }
   }
 
   render();
+  setTimeout(function () { firstCount = false; }, 2200);
   if (location.search.indexOf('add=1') >= 0) setTimeout(function () { $('fab').onclick(); }, 100);
 
   if (window.claude && window.claude.use) {
