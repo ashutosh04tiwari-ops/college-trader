@@ -250,6 +250,13 @@ select { font: inherit; }
 .fab { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(82px + env(safe-area-inset-bottom, 0px)); width: 56px; height: 56px; min-height: 56px; border-radius: 50%; background: var(--accent); color: var(--on-fill); font-size: 30px; line-height: 1; padding: 0; border: 0; box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 19; }
 #splash { position: fixed; inset: 0; z-index: 100; background: #000; display: flex; align-items: center; justify-content: center; animation: splashout 0.4s ease 0.9s forwards; }
 #splash img { width: 120px; height: 120px; border-radius: 24px; }
+#splash .sdw { display: none; }
+:root[data-diwali="1"] #splash { flex-direction: column; gap: 14px; background: radial-gradient(circle at 50% 40%, #3a1a05, #000 70%); animation-delay: 2.6s; }
+:root[data-diwali="1"] #splash img { box-shadow: 0 0 0 3px rgba(255,190,70,0.9), 0 0 50px rgba(255,150,40,0.8); }
+:root[data-diwali="1"] #splash .sdw { display: block; font-family: Georgia, serif; font-size: 24px; letter-spacing: 0.14em; color: #ffd27a; text-align: center; }
+#gfx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 101; pointer-events: none; display: none; }
+:root[data-diwali="1"] #gfx { display: block; }
+:root[data-diwali="1"] { --accent: #ffa43c; --accent-soft: rgba(255,164,60,0.16); --on-fill: #1a0c00; }
 @keyframes splashout { to { opacity: 0; visibility: hidden; } }
 @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .panel:not([hidden]) { animation: fadein 0.25s ease; }
@@ -802,7 +809,8 @@ select { font: inherit; }
       <div class="btns"><button type="button" class="b-loss" id="forgotyes">Erase and unlock</button><button type="button" class="b-ghost" id="forgotno">Cancel</button></div>
     </div>
   </div>
-  <div id="splash" aria-hidden="true"><img src="logo.png" alt="" width="120" height="120"></div>
+  <div id="splash" aria-hidden="true"><img src="logo.png" alt="" width="120" height="120"><div class="sdw">🪔 Happy Diwali 🪔</div></div>
+<canvas id="gfx" aria-hidden="true"></canvas>
 <script>
 (function () {
   var EXAMPLE = {
@@ -2637,6 +2645,27 @@ select { font: inherit; }
     dw.parts = dw.parts.filter(function (p) { return p.life > 0; });
     dw.parts.forEach(function (p) { p.vy += 90 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= p.dec * dt; x.fillStyle = 'rgba(' + p.c + ',' + Math.max(0, p.life) + ')'; x.beginPath(); x.arc(p.x, p.y, 1.8, 0, 6.283); x.fill(); });
   }
+  var gf = { on: false, raf: 0, parts: [], t0: 0, next: 0, last: 0 };
+  function gfFrame(ts) {
+    if (!gf.on) return;
+    var c = $('gfx'), x = c.getContext('2d'); if (!gf.t0) gf.t0 = ts;
+    var dt = Math.min(0.05, (ts - gf.last) / 1000 || 0.016); gf.last = ts;
+    x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,0.2)'; x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'lighter';
+    if (ts - gf.t0 < 6500 && ts > gf.next) {
+      var W = c.width, H = c.height, big = Math.random() > 0.5, n = big ? 80 : 55, a0 = DWCOL[Math.floor(Math.random() * DWCOL.length)], b0 = DWCOL[Math.floor(Math.random() * DWCOL.length)], bx = 40 + Math.random() * (W - 80), by = 60 + Math.random() * H * 0.5;
+      for (var i = 0; i < n; i++) { var a = 6.283 * i / n, sp = (big ? 160 : 110) * (0.55 + Math.random() * 0.6); gf.parts.push({ x: bx, y: by, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, dec: 0.45 + Math.random() * 0.3, c: i % 3 ? a0 : b0 }); }
+      boomSound(big); gf.next = ts + 500 + Math.random() * 700;
+    }
+    gf.parts = gf.parts.filter(function (p) { return p.life > 0; });
+    gf.parts.forEach(function (p) { p.vy += 100 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= p.dec * dt; x.fillStyle = 'rgba(' + p.c + ',' + Math.max(0, p.life) + ')'; x.beginPath(); x.arc(p.x, p.y, 2.2, 0, 6.283); x.fill(); });
+    if (ts - gf.t0 > 6500 && !gf.parts.length) { gf.on = false; x.clearRect(0, 0, c.width, c.height); $('gfx').style.display = 'none'; return; }
+    gf.raf = requestAnimationFrame(gfFrame);
+  }
+  function gfStart() {
+    if (REDUCED || document.documentElement.getAttribute('data-diwali') !== '1') return;
+    var c = $('gfx'); c.width = window.innerWidth; c.height = window.innerHeight; gf.on = true; gf.t0 = 0; gf.next = 0; gf.parts = []; gf.raf = requestAnimationFrame(gfFrame);
+  }
+  gfStart();
   function dwStart() {
     var po = $('poster'), c = $('pfx'); dw.w = c.width = po.clientWidth; dw.h = c.height = po.clientHeight;
     if (REDUCED || dw.on) return; dw.on = true; dw.last = 0; dw.next = 0; dw.raf = requestAnimationFrame(dwFrame);
