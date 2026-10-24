@@ -239,6 +239,12 @@ select { font: inherit; }
 .cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)) 50px; }
 .cal-cell.wk { background: transparent; border: 1px dashed var(--line); }
 .cal-cell { transition: transform 0.15s; }
+.fx { margin-top: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px; font-family: var(--font-num); font-size: 14px; line-height: 2; overflow-x: auto; }
+.fx .fh { color: var(--ink-2); font-size: 12px; }
+.fx .fm { color: var(--accent); font-weight: 600; margin-top: 4px; }
+.fx .fe { padding-left: 14px; white-space: nowrap; }
+.fx .fe.last { font-weight: 700; font-size: 16px; }
+.exres { font-family: var(--font-num); font-size: 28px; white-space: nowrap; font-weight: 500; margin-top: 12px; letter-spacing: -0.02em; }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -520,18 +526,17 @@ select { font: inherit; }
     <p class="calc" id="scorenote" style="margin-top:12px"></p>
   </section>
 
-  <section class="card" aria-label="Expectancy">
-    <div class="label">Expectancy</div>
-    <p class="sub" style="margin:6px 0 0">Expectancy = (Win rate &times; Avg win) &minus; (Loss rate &times; Avg loss)</p>
-    <ul class="rl" id="exlines"></ul>
-    <div class="bsec"><div class="label">What-if calculator</div>
-      <div class="row3" style="margin-top:8px">
-        <div class="field"><label class="tmeta" for="xw">Win rate %</label><input id="xw" type="number" inputmode="decimal" step="any" min="0" max="100" value="40"></div>
-        <div class="field"><label class="tmeta" for="xr">Reward (R)</label><input id="xr" type="number" inputmode="decimal" step="any" min="0" value="2"></div>
-        <div class="field"><label class="tmeta" for="xl">Risk (R)</label><input id="xl" type="number" inputmode="decimal" step="any" min="0" value="1"></div>
-      </div>
-      <p class="calc" id="xout" style="margin-top:10px"></p>
+  <section class="card" aria-label="Expectancy" id="excard">
+    <div class="label">Expectancy formula</div>
+    <div class="chips"><button type="button" id="ex-real">My trades</button><button type="button" id="ex-what">What-if</button></div>
+    <div class="row3" id="exinputs" style="margin-top:12px" hidden>
+      <div class="field"><label class="tmeta" for="xw">Win rate %</label><input id="xw" type="number" inputmode="decimal" step="any" min="0" max="100" value="40"></div>
+      <div class="field"><label class="tmeta" for="xr">Reward (R)</label><input id="xr" type="number" inputmode="decimal" step="any" min="0" value="2"></div>
+      <div class="field"><label class="tmeta" for="xl">Risk (R)</label><input id="xl" type="number" inputmode="decimal" step="any" min="0" value="1"></div>
     </div>
+    <div class="fx" id="exsteps"></div>
+    <div class="exres" id="exres"></div>
+    <div class="tmeta" id="exnote" style="margin-top:6px"></div>
   </section>
 
   <section class="card" aria-label="Prop firm challenge">
@@ -976,6 +981,7 @@ select { font: inherit; }
     box.appendChild(tile('stat', 'This month', signed(monPl), monPl > 0 ? 'pos' : monPl < 0 ? 'neg' : '', monN + (monN === 1 ? ' trade' : ' trades')));
     box.appendChild(tile('stat', 'Biggest win', st.best && st.best.pl > 0 ? signed(st.best.pl) : '-', st.best && st.best.pl > 0 ? 'pos' : '', st.best && st.best.t ? fmtDMY(st.best.t) : 'Single trade'));
     box.appendChild(tile('stat', 'Best day', st.bestDay && st.bestDay.pl > 0 ? signed(st.bestDay.pl) : '-', st.bestDay && st.bestDay.pl > 0 ? 'pos' : '', st.bestDay ? fmtDMY(st.bestDay.t) : 'Needs dated trades'));
+    box.appendChild(tile('stat', 'Expectancy', st.n ? signed(r2(st.net / st.n)) : '-', st.n ? (st.net >= 0 ? 'pos' : 'neg') : '', 'Per trade'));
     box.appendChild(tile('stat', 'Worst day', st.worstDay && st.worstDay.pl < 0 ? signed(st.worstDay.pl) : '-', st.worstDay && st.worstDay.pl < 0 ? 'neg' : '', st.worstDay ? fmtDMY(st.worstDay.t) : 'Needs dated trades'));
   }
 
@@ -1351,35 +1357,42 @@ select { font: inherit; }
     $('bmatrixn').textContent = 'Big = at least your average trade size ($' + avg.toFixed(2) + '). Goal: big profits and small losses (ticked boxes). ' + Math.round(good / t.length * 100) + '% of your trades are in those two boxes.' + (c.bl.n ? ' Big losses cost ' + signed(c.bl.s) + ': cut them first.' : '');
   }
 
+  var exMode = null;
   function renderExpect() {
-    var ul = $('exlines'); ul.textContent = '';
-    function li(txt, cls) { var e = document.createElement('li'); e.textContent = txt; if (cls) e.className = cls; ul.appendChild(e); }
-    var st = computeStats(state.trades, 0);
-    if (!st.n) { li('Add trades to see your real expectancy.'); updateWhatIf(); return; }
-    var wp = st.wins / st.n, lp = st.losses / st.n;
-    var ex = r2(wp * st.avgW - lp * st.avgL);
-    li('Win rate ' + (wp * 100).toFixed(0) + '% \u00b7 Loss rate ' + (lp * 100).toFixed(0) + '%');
-    li('Avg win ' + signed(r2(st.avgW)) + ' \u00b7 Avg loss ' + signed(-r2(st.avgL)));
-    li('Ex = (' + wp.toFixed(2) + ' \u00d7 $' + st.avgW.toFixed(2) + ') \u2212 (' + lp.toFixed(2) + ' \u00d7 $' + st.avgL.toFixed(2) + ') = ' + signed(ex) + ' per trade', ex >= 0 ? 'pos' : 'neg');
-    var rw = [], rl = [];
-    state.trades.forEach(function (x) { var r = rOf(x); if (r === null) return; if (r > 0) rw.push(r); else if (r < 0) rl.push(-r); });
-    if (rw.length || rl.length) {
-      var nR = rw.length + rl.length, aw = rw.length ? rw.reduce(function (a, b) { return a + b; }, 0) / rw.length : 0, al = rl.length ? rl.reduce(function (a, b) { return a + b; }, 0) / rl.length : 0;
-      var exR = (rw.length / nR) * aw - (rl.length / nR) * al;
-      li('In R: (' + (rw.length / nR).toFixed(2) + ' \u00d7 ' + aw.toFixed(2) + 'R) \u2212 (' + (rl.length / nR).toFixed(2) + ' \u00d7 ' + al.toFixed(2) + 'R) = ' + fmtR(r2(exR)) + ' per trade (' + nR + ' trades with SL)', exR >= 0 ? 'pos' : 'neg');
-    } else { li('Add a stop loss to your trades to see this in R.'); }
-    if (st.avgL > 0 && st.avgW > 0) li('Your breakeven win rate at this reward:risk (' + (st.avgW / st.avgL).toFixed(2) + ':1) is ' + (100 / (1 + st.avgW / st.avgL)).toFixed(1) + '%');
-    li(ex > 0 ? 'Positive edge: keep following the plan.' : ex < 0 ? 'Negative expectancy: on average each trade loses money. Fix the biggest leak first.' : 'Break-even edge.');
-    updateWhatIf();
+    var st = computeStats(state.trades, 0), unit = 'usd', wp = 0, lp = 0, aw = 0, al = 0, src = '';
+    if (exMode === null) exMode = st.n ? 'real' : 'what';
+    $('ex-real').className = 'chip' + (exMode === 'real' ? ' on' : ''); $('ex-what').className = 'chip' + (exMode === 'what' ? ' on' : '');
+    $('exinputs').hidden = exMode !== 'what';
+    var box = $('exsteps'); box.textContent = ''; var res = $('exres'), note = $('exnote');
+    function line(txt, cls) { var d = document.createElement('div'); d.className = cls; d.textContent = txt; box.appendChild(d); }
+    var ok = true;
+    if (exMode === 'what') {
+      var w = parseFloat($('xw').value), r = parseFloat($('xr').value), l = parseFloat($('xl').value);
+      if (isNaN(w) || isNaN(r) || isNaN(l) || w < 0 || w > 100 || r < 0 || l <= 0) { ok = false; src = 'Enter win rate (0-100), reward and risk (above 0).'; }
+      else { unit = 'R'; wp = w / 100; lp = 1 - wp; aw = r; al = l; src = 'Risk : Reward = ' + l + 'R : ' + r + 'R'; }
+    } else if (!st.n) { ok = false; src = 'Add trades to see your real expectancy, or use What-if.'; }
+    else {
+      var rw = [], rl = [];
+      state.trades.forEach(function (x) { var rr = rOf(x); if (rr === null) return; if (rr > 0) rw.push(rr); else if (rr < 0) rl.push(-rr); });
+      var sum = function (a) { return a.reduce(function (s, v) { return s + v; }, 0); };
+      if (rw.length && rl.length) { unit = 'R'; var nR = rw.length + rl.length; wp = rw.length / nR; lp = rl.length / nR; aw = sum(rw) / rw.length; al = sum(rl) / rl.length; src = 'From your ' + nR + ' trades with a stop loss'; }
+      else { wp = st.wins / st.n; lp = st.losses / st.n; aw = st.avgW; al = st.avgL; src = 'From your ' + st.n + ' trades in dollars (add stop loss to see R)'; }
+    }
+    if (!ok) { line(src, 'fh'); res.textContent = ''; note.textContent = ''; return; }
+    var U = function (v) { return unit === 'R' ? v.toFixed(2) + 'R' : '$' + v.toFixed(2); };
+    var a1 = wp * aw, b1 = lp * al, ex = a1 - b1;
+    line(src, 'fh');
+    line('Reward ' + U(aw) + ' \u00b7 Risk ' + U(al), 'fe');
+    line('Win rate = ' + (wp * 100).toFixed(0) + '% \u00b7 Loss rate = ' + (lp * 100).toFixed(0) + '%', 'fe');
+    line('Ex = (Win% \u00d7 Avg win) \u2212 (Loss% \u00d7 Avg loss)', 'fm');
+    line('= (' + wp.toFixed(2) + ' \u00d7 ' + U(aw) + ') \u2212 (' + lp.toFixed(2) + ' \u00d7 ' + U(al) + ')', 'fe');
+    line('= ' + U(a1) + ' \u2212 ' + U(b1), 'fe');
+    line('= ' + (ex >= 0 ? '+' : '-') + U(Math.abs(ex)), 'fe last ' + (ex >= 0 ? 'pos' : 'neg'));
+    res.textContent = (ex >= 0 ? '+' : '-') + U(Math.abs(ex)) + ' per trade'; res.className = 'exres ' + (ex >= 0 ? 'pos' : 'neg');
+    var be = al / (aw + al) * 100;
+    note.textContent = 'Breakeven win rate at this reward:risk is ' + be.toFixed(1) + '%. Over 100 trades: ' + (ex >= 0 ? '+' : '-') + U(Math.abs(ex * 100)) + '. ' + (ex > 0 ? 'Positive edge: follow the plan.' : ex < 0 ? 'Negative expectancy: each trade loses on average.' : 'Break-even edge.');
   }
-
-  function updateWhatIf() {
-    var w = parseFloat($('xw').value), r = parseFloat($('xr').value), l = parseFloat($('xl').value), o = $('xout');
-    if (isNaN(w) || isNaN(r) || isNaN(l) || w < 0 || w > 100 || r < 0 || l <= 0) { o.textContent = 'Enter win rate (0-100), reward and risk (above 0).'; o.className = 'calc'; return; }
-    var p = w / 100, ex = p * r - (1 - p) * l, be = l / (r + l) * 100;
-    o.textContent = '(' + p.toFixed(2) + ' \u00d7 ' + r + 'R) \u2212 (' + (1 - p).toFixed(2) + ' \u00d7 ' + l + 'R) = ' + fmtR(r2(ex)) + ' per trade. Breakeven win rate: ' + be.toFixed(1) + '%. Over 100 trades: ' + fmtR(r2(ex * 100)) + '.';
-    o.className = 'calc ' + (ex >= 0 ? 'pos' : 'neg');
-  }
+  function updateWhatIf() { renderExpect(); }
 
   function renderHeat() {
     var box = $('bhour'); box.textContent = '';
@@ -2250,6 +2263,8 @@ select { font: inherit; }
   $('resetyes').onclick = resetAll;
   eqSetup();
   ['xw', 'xr', 'xl'].forEach(function (id) { $(id).addEventListener('input', updateWhatIf); });
+  $('ex-real').onclick = function () { exMode = 'real'; renderExpect(); };
+  $('ex-what').onclick = function () { exMode = 'what'; renderExpect(); };
   ['fq', 'fres', 'fsess', 'fmist'].forEach(function (id) { $(id).addEventListener(id === 'fq' ? 'input' : 'change', renderList); });
   $('fflag').onclick = function () { flagOnly = !flagOnly; $('fflag').className = 'chip' + (flagOnly ? ' on' : ''); renderList(); };
   $('cdep').onclick = function () { setCashType('dep'); };
