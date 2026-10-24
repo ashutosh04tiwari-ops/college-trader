@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="College Trader">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script>try{var L=localStorage,R=document.documentElement;if(!L.getItem("ct-look-v2")){L.setItem("ct-look-v2","1");L.setItem("ct-theme","dark");L.setItem("ct-bg","city");L.setItem("ct-poster","1");}var __t=L.getItem("ct-theme"),__b=L.getItem("ct-bg");R.setAttribute("data-theme",["light","dark","amoled","navy","purple","gold","cinema","luxury"].indexOf(__t)>=0?__t:"dark");R.setAttribute("data-bg",["none","city","chart","anim"].indexOf(__b)>=0?__b:"none");R.setAttribute("data-poster",L.getItem("ct-poster")==="0"?"0":"1");}catch(e){document.documentElement.setAttribute("data-theme","dark");document.documentElement.setAttribute("data-bg","none");document.documentElement.setAttribute("data-poster","1");}</script>
+<script>try{var L=localStorage,R=document.documentElement;if(!L.getItem("ct-look-v2")){L.setItem("ct-look-v2","1");L.setItem("ct-theme","dark");L.setItem("ct-bg","city");L.setItem("ct-poster","1");}var __t=L.getItem("ct-theme"),__b=L.getItem("ct-bg");R.setAttribute("data-theme",["light","dark","amoled","navy","purple","gold","cinema","luxury"].indexOf(__t)>=0?__t:"dark");R.setAttribute("data-bg",["none","city","chart","anim"].indexOf(__b)>=0?__b:"none");R.setAttribute("data-poster",L.getItem("ct-poster")==="0"?"0":"1");if(!L.getItem("ct-dw26")){L.setItem("ct-dw26","1");L.setItem("ct-diwali","1");}R.setAttribute("data-diwali",L.getItem("ct-diwali")==="0"?"0":"1");}catch(e){document.documentElement.setAttribute("data-theme","dark");document.documentElement.setAttribute("data-bg","none");document.documentElement.setAttribute("data-poster","1");}</script>
 <style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 <title>The College Trader</title>
 <style>
@@ -86,6 +86,24 @@
 #poster .ptag { margin-top: 4px; font-style: italic; font-size: 13px; color: #ecd9b6; }
 #poster .pline { width: 64px; height: 2px; margin: 10px auto 8px; background: linear-gradient(90deg, transparent, #ffb454, transparent); }
 #poster .pgreet { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #b9c4d8; }
+
+:root[data-diwali="1"] #poster { display: block; border-color: rgba(255,170,60,0.6); background: radial-gradient(120% 90% at 50% 0%, rgba(255,150,40,0.45), transparent 62%), linear-gradient(180deg, rgba(30,10,4,0.9), rgba(8,4,6,0.96)); box-shadow: 0 0 30px rgba(255,140,30,0.25); }
+#pfx { display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+:root[data-diwali="1"] #pfx { display: block; }
+#poster .dw { display: none; }
+:root[data-diwali="1"] #poster .dw { display: block; }
+#poster .dwlights { height: 18px; margin: -6px -4px 6px; font-size: 14px; letter-spacing: 6px; white-space: nowrap; overflow: hidden; }
+#poster .dwlights i { font-style: normal; display: inline-block; animation: twk 1.4s ease-in-out infinite; }
+#poster .dwlights i:nth-child(2n) { animation-delay: 0.35s; } #poster .dwlights i:nth-child(3n) { animation-delay: 0.7s; }
+@keyframes twk { 0%,100% { opacity: 0.35; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.15); } }
+#poster .logowrap { position: relative; display: inline-block; cursor: pointer; }
+:root[data-diwali="1"] #poster .logowrap::before { content: ""; position: absolute; inset: -14px; border-radius: 50%; background: radial-gradient(circle, rgba(255,190,70,0.65), rgba(255,120,20,0.25) 55%, transparent 72%); animation: dwglow 2.4s ease-in-out infinite; }
+@keyframes dwglow { 0%,100% { transform: scale(0.92); opacity: 0.7; } 50% { transform: scale(1.12); opacity: 1; } }
+:root[data-diwali="1"] #poster .plogo { position: relative; box-shadow: 0 0 0 3px rgba(255,190,70,0.9), 0 0 36px rgba(255,150,40,0.8); }
+#poster .diya { position: absolute; bottom: -10px; font-size: 26px; filter: drop-shadow(0 0 8px #ffb030); animation: twk 1.6s ease-in-out infinite; }
+#poster .diya.l { left: -26px; } #poster .diya.r { right: -26px; animation-delay: 0.5s; }
+#poster .dwhello { margin-top: 10px; font-family: Georgia, serif; font-size: 22px; letter-spacing: 0.14em; background: linear-gradient(90deg, #ffd27a, #ff9a3c, #ffd27a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (prefers-reduced-motion: reduce) { #poster .dwlights i, #poster .diya, #poster .logowrap::before { animation: none; } }
 :root[data-theme="luxury"] { --bg: #000000; --surface: #0b0a07; --ink: #f3e9d0; --ink-2: #a89b7a; --line: rgba(212,175,55,0.30); --accent: #d4af37; --accent-soft: rgba(212,175,55,0.14); --profit: #7bd88f; --loss: #ff7a6b; --on-fill: #000000; --grid: rgba(212,175,55,0.10); color-scheme: dark; }
 :root[data-theme="luxury"] h1, :root[data-theme="luxury"] .bal, :root[data-theme="luxury"] .score { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 :root[data-theme="luxury"] h1 { letter-spacing: 0.1em; text-transform: uppercase; font-size: 15px; }
@@ -350,7 +368,10 @@ select { font: inherit; }
 
   <div class="panel" id="p-dash">
   <section id="poster" aria-label="Banner">
-    <img class="plogo" src="logo.png" alt="" width="84" height="84">
+    <canvas id="pfx"></canvas>
+    <div class="dw dwlights" aria-hidden="true"><i>🪔</i><i>✨</i><i>🪔</i><i>✨</i><i>🪔</i><i>✨</i><i>🪔</i><i>✨</i><i>🪔</i><i>✨</i><i>🪔</i><i>✨</i></div>
+    <div class="logowrap" id="plw"><img class="plogo" src="logo.png" alt="" width="84" height="84"><span class="dw diya l">🪔</span><span class="dw diya r">🪔</span></div>
+    <div class="dw dwhello">Happy Diwali</div>
     <div class="ptitle">The College Trader</div>
     <div class="ptag">Turning Data Into Decisions.</div>
     <div class="pline"></div>
@@ -724,7 +745,7 @@ select { font: inherit; }
       <button type="button" data-b="chart">Chart glow</button>
       <button type="button" data-b="anim">Moving candles</button>
     </div>
-    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button></div>
+    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
@@ -2583,6 +2604,60 @@ select { font: inherit; }
   }
   $('postbtn').onclick = function () { applyPoster(document.documentElement.getAttribute('data-poster') !== '1'); };
   applyPoster(document.documentElement.getAttribute('data-poster') !== '0');
+
+  /* Diwali crackers */
+  var dw = { ctx: null, snd: true, raf: 0, last: 0, parts: [], on: false, w: 0, h: 0, next: 0 };
+  try { dw.snd = localStorage.getItem('ct-dwsnd') !== '0'; } catch (e) {}
+  function audio() {
+    if (!dw.snd) return null;
+    try { var AC = window.AudioContext || window.webkitAudioContext; if (!dw.ctx && AC) dw.ctx = new AC(); if (dw.ctx && dw.ctx.state === 'suspended') dw.ctx.resume(); } catch (e) {}
+    return dw.ctx;
+  }
+  function noiseBuf(c, sec) { var n = Math.floor(c.sampleRate * sec), b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0); for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b; }
+  function boomSound(big) {
+    var c = audio(); if (!c) return; var t = c.currentTime;
+    var o = c.createOscillator(), og = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(1500, t + 0.35); og.gain.setValueAtTime(0.0001, t); og.gain.linearRampToValueAtTime(0.05, t + 0.15); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.38); o.connect(og); og.connect(c.destination); o.start(t); o.stop(t + 0.4);
+    var s = c.createBufferSource(); s.buffer = noiseBuf(c, 0.9); var f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(big ? 900 : 1400, t + 0.38); f.frequency.exponentialRampToValueAtTime(120, t + 1.1);
+    var g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.setValueAtTime(big ? 0.9 : 0.6, t + 0.38); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2); s.connect(f); f.connect(g); g.connect(c.destination); s.start(t + 0.38);
+    for (var k = 0; k < 9; k++) { var cs = c.createBufferSource(); cs.buffer = noiseBuf(c, 0.04); var cf = c.createBiquadFilter(); cf.type = 'highpass'; cf.frequency.value = 2500; var cg = c.createGain(); var tt = t + 0.5 + Math.random() * 0.8; cg.gain.setValueAtTime(0.18, tt); cg.gain.exponentialRampToValueAtTime(0.0001, tt + 0.04); cs.connect(cf); cf.connect(cg); cg.connect(c.destination); cs.start(tt); }
+  }
+  var DWCOL = ['255,210,90', '255,140,40', '255,90,90', '120,230,160', '120,190,255', '255,150,230', '255,255,255'];
+  function burst(x, y, big) {
+    var col = DWCOL[Math.floor(Math.random() * DWCOL.length)], col2 = DWCOL[Math.floor(Math.random() * DWCOL.length)], n = big ? 70 : 46;
+    for (var i = 0; i < n; i++) { var a = Math.PI * 2 * i / n + Math.random() * 0.1, sp = (big ? 120 : 85) * (0.55 + Math.random() * 0.6); dw.parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, dec: 0.5 + Math.random() * 0.35, c: i % 3 ? col : col2 }); }
+    boomSound(big);
+  }
+  function dwFrame(ts) {
+    if (!dw.on) return;
+    dw.raf = requestAnimationFrame(dwFrame);
+    var dt = Math.min(0.05, (ts - dw.last) / 1000 || 0.016); dw.last = ts;
+    var c = $('pfx'), x = c.getContext('2d');
+    x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,0.22)'; x.fillRect(0, 0, dw.w, dw.h); x.globalCompositeOperation = 'lighter';
+    if (ts > dw.next) { burst(30 + Math.random() * (dw.w - 60), 20 + Math.random() * dw.h * 0.55, Math.random() > 0.7); dw.next = ts + 1300 + Math.random() * 1400; }
+    dw.parts = dw.parts.filter(function (p) { return p.life > 0; });
+    dw.parts.forEach(function (p) { p.vy += 90 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= p.dec * dt; x.fillStyle = 'rgba(' + p.c + ',' + Math.max(0, p.life) + ')'; x.beginPath(); x.arc(p.x, p.y, 1.8, 0, 6.283); x.fill(); });
+  }
+  function dwStart() {
+    var po = $('poster'), c = $('pfx'); dw.w = c.width = po.clientWidth; dw.h = c.height = po.clientHeight;
+    if (REDUCED || dw.on) return; dw.on = true; dw.last = 0; dw.next = 0; dw.raf = requestAnimationFrame(dwFrame);
+  }
+  function dwStop() { dw.on = false; cancelAnimationFrame(dw.raf); dw.parts = []; var c = $('pfx'); c.getContext('2d').clearRect(0, 0, c.width, c.height); }
+  function applyDiwali(on) {
+    document.documentElement.setAttribute('data-diwali', on ? '1' : '0');
+    try { localStorage.setItem('ct-diwali', on ? '1' : '0'); } catch (e) {}
+    $('dwbtn').className = on ? 'on' : '';
+    if (on) { setTimeout(dwStart, 60); } else dwStop();
+  }
+  function applySnd(on) { dw.snd = on; try { localStorage.setItem('ct-dwsnd', on ? '1' : '0'); } catch (e) {} $('sndbtn').className = on ? 'on' : ''; }
+  $('dwbtn').onclick = function () { applyDiwali(document.documentElement.getAttribute('data-diwali') !== '1'); };
+  $('sndbtn').onclick = function () { applySnd(!dw.snd); if (dw.snd) { burst(dw.w / 2, dw.h * 0.3, true); } };
+  $('plw').onclick = function () { burst(dw.w / 2, 70, true); burst(dw.w * 0.25, 50, false); burst(dw.w * 0.75, 50, false); toast('Happy Diwali! 🪔'); };
+  document.addEventListener('visibilitychange', function () { if (document.documentElement.getAttribute('data-diwali') !== '1') return; if (document.visibilityState === 'hidden') dwStop(); else dwStart(); });
+  window.addEventListener('resize', function () { if (dw.on) { dwStop(); dwStart(); } });
+  applySnd(dw.snd);
+  applyDiwali(document.documentElement.getAttribute('data-diwali') !== '0');
+  document.addEventListener('touchstart', function u() { audio(); document.removeEventListener('touchstart', u); }, { passive: true });
+  document.addEventListener('click', function u2() { audio(); document.removeEventListener('click', u2); });
   (function () { var hr = new Date().getHours(); $('pgreet').textContent = (hr < 5 ? 'Late night, trader' : hr < 12 ? 'Good morning, trader' : hr < 17 ? 'Good afternoon, trader' : hr < 21 ? 'Good evening, trader' : 'Night session, trader'); })();
   $('expcsv').onclick = exportCsv;
   $('expjson').onclick = exportBackup;

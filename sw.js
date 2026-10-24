@@ -1,4 +1,4 @@
-var CACHE = 'college-trader-v24';
+var CACHE = 'college-trader-v25';
 var FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'logo.png', 'bg-city.jpg', 'bg-chart.jpg'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }));
