@@ -219,6 +219,13 @@ select { font: inherit; }
   #printarea .ph { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
   #printarea h2 { font-size: 14px; margin: 14px 0 0; }
 }
+.mx { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.mx > div { border-radius: 10px; padding: 12px; border: 1px solid var(--line); min-width: 0; position: relative; }
+.mx .mt { font-size: 13px; font-weight: 600; }
+.mx .mn { font-family: var(--font-num); font-size: 24px; font-weight: 500; margin-top: 4px; }
+.mx .ms { font-size: 12px; color: var(--ink-2); }
+.mx .ok { position: absolute; top: 8px; right: 10px; font-size: 16px; color: var(--accent); }
+.mx .good { border: 2px solid var(--accent); }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -481,6 +488,7 @@ select { font: inherit; }
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
     <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
     <div class="bsec"><div class="label">Day of week</div><div id="bweek"></div></div>
+    <div class="bsec"><div class="label">Profit &amp; loss size matrix</div><div class="mx" id="bmatrix"></div><div class="tmeta" id="bmatrixn" style="margin-top:8px"></div></div>
     <div class="bsec"><div class="label">Time of day (phone time)</div><div class="hm" id="bhour"></div><div class="tmeta" id="bhourn" style="margin-top:8px"></div></div>
     <div class="bsec"><div class="label">Setup playbook</div><div id="bplay"></div></div>
     <div class="bsec"><div class="label">Mistakes (what they cost)</div><div id="bmist"></div></div>
@@ -497,6 +505,20 @@ select { font: inherit; }
     <div class="radar" id="radar"></div>
     <div id="pmetrics"></div>
     <p class="calc" id="scorenote" style="margin-top:12px"></p>
+  </section>
+
+  <section class="card" aria-label="Expectancy">
+    <div class="label">Expectancy</div>
+    <p class="sub" style="margin:6px 0 0">Expectancy = (Win rate &times; Avg win) &minus; (Loss rate &times; Avg loss)</p>
+    <ul class="rl" id="exlines"></ul>
+    <div class="bsec"><div class="label">What-if calculator</div>
+      <div class="row3" style="margin-top:8px">
+        <div class="field"><label class="tmeta" for="xw">Win rate %</label><input id="xw" type="number" inputmode="decimal" step="any" min="0" max="100" value="40"></div>
+        <div class="field"><label class="tmeta" for="xr">Reward (R)</label><input id="xr" type="number" inputmode="decimal" step="any" min="0" value="2"></div>
+        <div class="field"><label class="tmeta" for="xl">Risk (R)</label><input id="xl" type="number" inputmode="decimal" step="any" min="0" value="1"></div>
+      </div>
+      <p class="calc" id="xout" style="margin-top:10px"></p>
+    </div>
   </section>
 
   <section class="card" aria-label="Prop firm challenge">
@@ -1227,6 +1249,60 @@ select { font: inherit; }
     $('pperr').textContent = ''; persist(); render();
   }
 
+  function renderMatrix() {
+    var box = $('bmatrix'); box.textContent = '';
+    var t = state.trades.filter(function (x) { return x.pl !== 0; });
+    if (!t.length) { $('bmatrixn').textContent = 'Add trades to see how big your wins and losses are.'; return; }
+    var avg = t.reduce(function (s, x) { return s + Math.abs(x.pl); }, 0) / t.length;
+    var c = { bp: { n: 0, s: 0 }, bl: { n: 0, s: 0 }, sp: { n: 0, s: 0 }, sl: { n: 0, s: 0 } };
+    t.forEach(function (x) {
+      var k = x.pl > 0 ? (x.pl >= avg ? 'bp' : 'sp') : (-x.pl >= avg ? 'bl' : 'sl');
+      c[k].n++; c[k].s = r2(c[k].s + x.pl);
+    });
+    [['bp', 'Big profit', true, 'profit'], ['bl', 'Big loss', false, 'loss'], ['sp', 'Small profit', false, 'profit'], ['sl', 'Small loss', true, 'loss']].forEach(function (q) {
+      var d = document.createElement('div'); if (q[2]) d.className = 'good';
+      d.style.background = 'color-mix(in srgb, var(--' + q[3] + ') 12%, transparent)';
+      var a = document.createElement('div'); a.className = 'mt'; a.textContent = q[1];
+      var n = document.createElement('div'); n.className = 'mn'; n.textContent = String(c[q[0]].n);
+      var s = document.createElement('div'); s.className = 'ms'; s.textContent = Math.round(c[q[0]].n / t.length * 100) + '% \u00b7 ' + signed(c[q[0]].s);
+      d.appendChild(a); d.appendChild(n); d.appendChild(s);
+      if (q[2]) { var ok = document.createElement('span'); ok.className = 'ok'; ok.textContent = '\u2713'; d.appendChild(ok); }
+      box.appendChild(d);
+    });
+    var good = c.bp.n + c.sl.n;
+    $('bmatrixn').textContent = 'Big = at least your average trade size ($' + avg.toFixed(2) + '). Goal: big profits and small losses (ticked boxes). ' + Math.round(good / t.length * 100) + '% of your trades are in those two boxes.' + (c.bl.n ? ' Big losses cost ' + signed(c.bl.s) + ': cut them first.' : '');
+  }
+
+  function renderExpect() {
+    var ul = $('exlines'); ul.textContent = '';
+    function li(txt, cls) { var e = document.createElement('li'); e.textContent = txt; if (cls) e.className = cls; ul.appendChild(e); }
+    var st = computeStats(state.trades, 0);
+    if (!st.n) { li('Add trades to see your real expectancy.'); updateWhatIf(); return; }
+    var wp = st.wins / st.n, lp = st.losses / st.n;
+    var ex = r2(wp * st.avgW - lp * st.avgL);
+    li('Win rate ' + (wp * 100).toFixed(0) + '% \u00b7 Loss rate ' + (lp * 100).toFixed(0) + '%');
+    li('Avg win ' + signed(r2(st.avgW)) + ' \u00b7 Avg loss ' + signed(-r2(st.avgL)));
+    li('Ex = (' + wp.toFixed(2) + ' \u00d7 $' + st.avgW.toFixed(2) + ') \u2212 (' + lp.toFixed(2) + ' \u00d7 $' + st.avgL.toFixed(2) + ') = ' + signed(ex) + ' per trade', ex >= 0 ? 'pos' : 'neg');
+    var rw = [], rl = [];
+    state.trades.forEach(function (x) { var r = rOf(x); if (r === null) return; if (r > 0) rw.push(r); else if (r < 0) rl.push(-r); });
+    if (rw.length || rl.length) {
+      var nR = rw.length + rl.length, aw = rw.length ? rw.reduce(function (a, b) { return a + b; }, 0) / rw.length : 0, al = rl.length ? rl.reduce(function (a, b) { return a + b; }, 0) / rl.length : 0;
+      var exR = (rw.length / nR) * aw - (rl.length / nR) * al;
+      li('In R: (' + (rw.length / nR).toFixed(2) + ' \u00d7 ' + aw.toFixed(2) + 'R) \u2212 (' + (rl.length / nR).toFixed(2) + ' \u00d7 ' + al.toFixed(2) + 'R) = ' + fmtR(r2(exR)) + ' per trade (' + nR + ' trades with SL)', exR >= 0 ? 'pos' : 'neg');
+    } else { li('Add a stop loss to your trades to see this in R.'); }
+    if (st.avgL > 0 && st.avgW > 0) li('Your breakeven win rate at this reward:risk (' + (st.avgW / st.avgL).toFixed(2) + ':1) is ' + (100 / (1 + st.avgW / st.avgL)).toFixed(1) + '%');
+    li(ex > 0 ? 'Positive edge: keep following the plan.' : ex < 0 ? 'Negative expectancy: on average each trade loses money. Fix the biggest leak first.' : 'Break-even edge.');
+    updateWhatIf();
+  }
+
+  function updateWhatIf() {
+    var w = parseFloat($('xw').value), r = parseFloat($('xr').value), l = parseFloat($('xl').value), o = $('xout');
+    if (isNaN(w) || isNaN(r) || isNaN(l) || w < 0 || w > 100 || r < 0 || l <= 0) { o.textContent = 'Enter win rate (0-100), reward and risk (above 0).'; o.className = 'calc'; return; }
+    var p = w / 100, ex = p * r - (1 - p) * l, be = l / (r + l) * 100;
+    o.textContent = '(' + p.toFixed(2) + ' \u00d7 ' + r + 'R) \u2212 (' + (1 - p).toFixed(2) + ' \u00d7 ' + l + 'R) = ' + fmtR(r2(ex)) + ' per trade. Breakeven win rate: ' + be.toFixed(1) + '%. Over 100 trades: ' + fmtR(r2(ex * 100)) + '.';
+    o.className = 'calc ' + (ex >= 0 ? 'pos' : 'neg');
+  }
+
   function renderHeat() {
     var box = $('bhour'); box.textContent = '';
     var g = {}, used = 0, skipped = 0, hr;
@@ -1320,7 +1396,7 @@ select { font: inherit; }
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
     breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
     breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
-    renderHeat(); renderPlaybook(); ppRender();
+    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect();
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -2077,6 +2153,7 @@ select { font: inherit; }
   $('resetno').onclick = function () { $('resetconfirm').hidden = true; $('resetbtn').hidden = false; };
   $('resetyes').onclick = resetAll;
   eqSetup();
+  ['xw', 'xr', 'xl'].forEach(function (id) { $(id).addEventListener('input', updateWhatIf); });
   ['fq', 'fres', 'fsess', 'fmist'].forEach(function (id) { $(id).addEventListener(id === 'fq' ? 'input' : 'change', renderList); });
   $('fflag').onclick = function () { flagOnly = !flagOnly; $('fflag').className = 'chip' + (flagOnly ? ' on' : ''); renderList(); };
   $('cdep').onclick = function () { setCashType('dep'); };
