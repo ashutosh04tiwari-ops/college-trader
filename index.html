@@ -245,6 +245,13 @@ select { font: inherit; }
 .fx .fe { padding-left: 14px; white-space: nowrap; }
 .fx .fe.last { font-weight: 700; font-size: 16px; }
 .exres { font-family: var(--font-num); font-size: 28px; white-space: nowrap; font-weight: 500; margin-top: 12px; letter-spacing: -0.02em; }
+.coach { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.coach li { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; font-size: 14px; }
+.coach i { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--loss); }
+.coach i.g { background: var(--profit); }
+.rflag { color: #e0a030; font-weight: 600; }
+#h100home { cursor: pointer; }
+#h100card .fx { font-size: 13px; }
 .panel { display: flex; flex-direction: column; gap: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .score { font-family: var(--font-num); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
@@ -294,6 +301,14 @@ select { font: inherit; }
     <div class="tmeta" id="goalsub" style="margin-top:6px"></div>
   </section>
 
+  <section class="card" id="h100home" role="button" tabindex="0" aria-label="Live expectancy and 100 trade test">
+    <div class="row"><span class="label">Expectancy (live)</span><span class="num" id="hexu"></span></div>
+    <div class="fx" id="hform"></div>
+    <div class="row" style="margin-top:12px"><span class="tmeta">100-trade test</span><span class="num tmeta" id="h100hn"></span></div>
+    <div class="bar" style="margin-top:6px"><i id="h100hf"></i></div>
+    <div class="tmeta" id="h100ht" style="margin-top:6px"></div>
+  </section>
+
   <section class="stats" aria-label="Summary">
     <div class="stat"><div class="label">Net P/L</div><div class="v" id="net">+$0.00</div></div>
     <div class="stat"><div class="label">Trades</div><div class="v" id="cnt">0</div></div>
@@ -302,6 +317,12 @@ select { font: inherit; }
   </section>
 
   <section class="stats" id="hl" aria-label="Highlights"></section>
+
+  <section class="card" aria-label="Coach insights">
+    <div class="label">Coach</div>
+    <ul class="coach" id="coach"></ul>
+    <div class="tmeta" id="coachn" style="margin-top:10px"></div>
+  </section>
 
   <section class="card" aria-label="Equity curve">
     <div class="label">Equity curve</div>
@@ -507,6 +528,7 @@ select { font: inherit; }
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
     <div class="bsec"><div class="label">Buy vs Sell</div><div id="bdir"></div></div>
     <div class="bsec"><div class="label">Day of week</div><div id="bweek"></div></div>
+    <div class="bsec"><div class="label">After-loss behavior</div><div id="bafter"></div></div>
     <div class="bsec"><div class="label">Profit &amp; loss size matrix</div><div class="mx" id="bmatrix"></div><div class="tmeta" id="bmatrixn" style="margin-top:8px"></div></div>
     <div class="bsec"><div class="label">Time of day (phone time)</div><div class="hm" id="bhour"></div><div class="tmeta" id="bhourn" style="margin-top:8px"></div></div>
     <div class="bsec"><div class="label">Setup playbook</div><div id="bplay"></div></div>
@@ -516,6 +538,17 @@ select { font: inherit; }
   </div>
 
   <div class="panel" id="p-perf" hidden>
+  <section class="card" aria-label="100 trade test" id="h100card">
+    <div class="row"><span class="label">100-trade test</span><span class="num" id="h100n"></span></div>
+    <div class="bar" style="margin-top:10px"><i id="h100f"></i></div>
+    <div class="fx" id="h100live"></div>
+    <div class="chart" id="h100spark"></div>
+    <div class="tmeta" id="h100ci"></div>
+    <div class="alert info" id="h100res" hidden></div>
+    <button type="button" class="b-ghost" id="h100new" style="margin-top:12px">Start new 100-trade test from now</button>
+    <p class="sub" style="margin-top:8px">Counts your next 100 trades. The formula updates after every trade and gives the final result at trade 100.</p>
+  </section>
+
   <section class="card" aria-label="Trade score">
     <div class="shead">
       <div><div class="label">Trade score</div><div class="sub" id="scoresub"></div></div>
@@ -770,6 +803,8 @@ select { font: inherit; }
       var gk = 'G' + now.getFullYear() + '-' + now.getMonth() + '|' + g;
       if (mp >= g && !done[gk]) { done[gk] = 1; msg = msg ? msg + ' Monthly goal too!' : 'Monthly goal reached!'; }
     }
+    var HD = h100Data();
+    if (HD.vals.length >= 100) { var hk = 'H' + HD.from; if (!done[hk]) { done[hk] = 1; msg = msg ? msg + ' 100-trade test complete!' : '100-trade test complete! See the result in the Score tab.'; } }
     if (msg) { try { localStorage.setItem('ct-cele', JSON.stringify(done)); } catch (e) {} toast(msg); confetti(); }
   }
 
@@ -885,7 +920,7 @@ select { font: inherit; }
   }
 
   function resetAll() {
-    state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, cash: [], trades: [], notes: [] };
+    state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, tfrom: 0, cash: [], trades: [], notes: [] };
     isExample = false;
     $('resetconfirm').hidden = true; $('resetbtn').hidden = false;
     persist(); render();
@@ -1333,6 +1368,161 @@ select { font: inherit; }
     $('pperr').textContent = ''; persist(); render();
   }
 
+  function behaviorFlags() {
+    var t = state.trades, out = [], i;
+    for (i = 0; i < t.length; i++) {
+      var f = { quick: false, bigger: false }, pv = i > 0 ? t[i - 1] : null, c = t[i];
+      if (pv && pv.pl < 0 && pv.t && c.t && dayKey(pv.t) === dayKey(c.t)) {
+        if (pv.tm === 1 && c.tm === 1 && c.t - pv.t >= 0 && c.t - pv.t <= 15 * 60000) f.quick = true;
+        if (pv.lots > 0 && c.lots >= pv.lots * 1.25) f.bigger = true;
+      }
+      out.push(f);
+    }
+    return out;
+  }
+
+  function groupStats(list, keyFn) {
+    var g = {};
+    list.forEach(function (x) { var k = keyFn(x); if (!k) return; if (!g[k]) g[k] = { n: 0, w: 0, pl: 0 }; g[k].n++; if (x.pl > 0) g[k].w++; g[k].pl = r2(g[k].pl + x.pl); });
+    return g;
+  }
+
+  function simpleRow(box, name, val, cls, meta) {
+    var r = document.createElement('div'); r.className = 'brow';
+    var hd = document.createElement('div'); hd.className = 'bhead';
+    var a = document.createElement('span'); a.className = 'bname'; a.textContent = name;
+    var b = document.createElement('span'); b.className = 'bval ' + cls; b.textContent = val; hd.appendChild(a); hd.appendChild(b);
+    var m = document.createElement('div'); m.className = 'bmeta'; m.textContent = meta;
+    r.appendChild(hd); r.appendChild(m); box.appendChild(r);
+  }
+
+  function renderAfter() {
+    var box = $('bafter'); box.textContent = '';
+    var t = state.trades, fl = behaviorFlags(), q = [], b = [], o = [];
+    t.forEach(function (x, i) { if (fl[i].quick) q.push(x); if (fl[i].bigger) b.push(x); if (!fl[i].quick && !fl[i].bigger) o.push(x); });
+    if (!q.length && !b.length) { var e = document.createElement('p'); e.className = 'bnone'; e.textContent = 'No trades taken quickly or bigger right after a loss. Good. (Add the Time and Lots to each trade so this can be checked.)'; box.appendChild(e); return; }
+    function row(name, list) {
+      if (!list.length) return;
+      var net = list.reduce(function (s, x) { return r2(s + x.pl); }, 0), w = list.filter(function (x) { return x.pl > 0; }).length;
+      simpleRow(box, name, signed(net), net >= 0 ? 'pos' : 'neg', list.length + ' trades \u00b7 ' + Math.round(w / list.length * 100) + '% win');
+    }
+    row('Within 15 min of a loss', q); row('Bigger lots right after a loss', b); row('All other trades', o);
+  }
+
+  function h100Data() {
+    var from = Math.min(state.tfrom || 0, state.trades.length);
+    var list = state.trades.slice(from, from + 100);
+    var allR = list.length > 0 && list.every(function (x) { return rOf(x) !== null; });
+    return { list: list, unit: allR ? 'R' : '$', vals: list.map(function (x) { return allR ? rOf(x) : x.pl; }), from: from };
+  }
+
+  function renderHomeFormula() {
+    var box = $('hform'); box.textContent = '';
+    function line(t, c) { var d = document.createElement('div'); d.className = c; d.textContent = t; box.appendChild(d); }
+    var t = state.trades;
+    if (isExample || !t.length) { line('Add trades. The formula fills in live from your own results.', 'fh'); $('hexu').textContent = ''; return; }
+    var allR = t.every(function (x) { return rOf(x) !== null; });
+    var v = t.map(function (x) { return allR ? rOf(x) : x.pl; }), n = v.length;
+    var U = function (x) { return allR ? Math.abs(x).toFixed(2) + 'R' : '$' + Math.abs(x).toFixed(2); };
+    var w = v.filter(function (x) { return x > 0; }), l = v.filter(function (x) { return x < 0; });
+    var sum = function (a) { return a.reduce(function (s, x) { return s + x; }, 0); };
+    var wp = w.length / n, lp = l.length / n, aw = w.length ? sum(w) / w.length : 0, al = l.length ? -sum(l) / l.length : 0, ex = wp * aw - lp * al;
+    line('Based on all ' + n + ' trades' + (allR ? ' (in R)' : ' (in $, add stop loss for R)'), 'fh');
+    line('Win rate ' + (wp * 100).toFixed(0) + '% \u00b7 Loss rate ' + (lp * 100).toFixed(0) + '%', 'fe');
+    line('Avg win ' + U(aw) + ' \u00b7 Avg loss ' + U(al), 'fe');
+    line('Ex = (' + wp.toFixed(2) + ' \u00d7 ' + U(aw) + ') \u2212 (' + lp.toFixed(2) + ' \u00d7 ' + U(al) + ')', 'fm');
+    line('= ' + U(w.length ? wp * aw : 0) + ' \u2212 ' + U(lp * al), 'fe');
+    line('= ' + (ex >= 0 ? '+' : '-') + U(ex) + ' per trade', 'fe last ' + (ex >= 0 ? 'pos' : 'neg'));
+    $('hexu').textContent = (ex >= 0 ? '+' : '-') + U(ex); $('hexu').className = 'num ' + (ex >= 0 ? 'pos' : 'neg');
+  }
+
+  function renderH100() {
+    var D = h100Data(), v = D.vals, n = v.length, U = function (x) { return D.unit === 'R' ? Math.abs(x).toFixed(2) + 'R' : '$' + Math.abs(x).toFixed(2); };
+    var SU = function (x) { return (x < 0 ? '-' : '+') + U(x); };
+    var pc = Math.min(100, n);
+    $('h100n').textContent = n + ' / 100';
+    $('h100f').style.width = pc + '%'; $('h100hf').style.width = pc + '%'; $('h100hn').textContent = n + ' / 100';
+    var live = $('h100live'); live.textContent = '';
+    function line(t, c) { var d = document.createElement('div'); d.className = c; d.textContent = t; live.appendChild(d); }
+    var res = $('h100res'); res.hidden = true; res.textContent = '';
+    var ci = $('h100ci'); ci.textContent = '';
+    $('h100spark').innerHTML = '';
+    if (isExample || n === 0) {
+      line('Add your trades. After each one the formula updates here.', 'fh');
+      $('h100ht').textContent = 'Tap to open. Your next 100 trades are counted.';
+      return;
+    }
+    var w = v.filter(function (x) { return x > 0; }), l = v.filter(function (x) { return x < 0; });
+    var sum = function (a) { return a.reduce(function (s, x) { return s + x; }, 0); };
+    var wp = w.length / n, lp = l.length / n, aw = w.length ? sum(w) / w.length : 0, al = l.length ? -sum(l) / l.length : 0, ex = wp * aw - lp * al;
+    line('Win rate ' + (wp * 100).toFixed(0) + '% \u00b7 Loss rate ' + (lp * 100).toFixed(0) + '%', 'fe');
+    line('Avg win ' + U(aw) + ' \u00b7 Avg loss ' + U(al), 'fe');
+    line('Ex = (' + wp.toFixed(2) + ' \u00d7 ' + U(aw) + ') \u2212 (' + lp.toFixed(2) + ' \u00d7 ' + U(al) + ')', 'fm');
+    line('= ' + SU(ex) + ' per trade', 'fe last ' + (ex >= 0 ? 'pos' : 'neg'));
+    $('h100ht').textContent = 'Live expectancy ' + SU(ex) + ' per trade' + (n < 100 ? ' \u00b7 ' + (100 - n) + ' trades to go' : ' \u00b7 complete');
+    // spread
+    var mean = sum(v) / n, sd = 0; v.forEach(function (x) { sd += (x - mean) * (x - mean); }); sd = n > 1 ? Math.sqrt(sd / (n - 1)) : 0;
+    var se = n > 1 ? sd / Math.sqrt(n) : 0, lo = mean - 1.96 * se, hi = mean + 1.96 * se;
+    if (n >= 20) ci.textContent = 'Likely range of your true expectancy: ' + SU(lo) + ' to ' + SU(hi) + ' per trade (rough, 95%). ' + (n < 100 ? 'It narrows as trades grow.' : '');
+    else ci.textContent = n < 100 ? 'Too early: results swing a lot under 20 trades. Judge at 100.' : '';
+    // running expectancy sparkline
+    if (n >= 3) {
+      var run = [], s = 0, i;
+      for (i = 0; i < n; i++) { s += v[i]; run.push(s / (i + 1)); }
+      var mn = Math.min.apply(null, run.concat([0])), mx = Math.max.apply(null, run.concat([0])), rg = (mx - mn) || 1, W = 320, H = 70;
+      var X = function (k) { return 4 + (W - 8) * k / (n - 1); }, Y = function (x) { return 6 + (H - 12) * (1 - (x - mn) / rg); };
+      var pth = run.map(function (x, k) { return (k ? 'L' : 'M') + X(k).toFixed(1) + ',' + Y(x).toFixed(1); }).join(' ');
+      $('h100spark').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Running expectancy" xmlns="http://www.w3.org/2000/svg"><line x1="4" x2="' + (W - 4) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '" style="stroke:var(--ink-2)" stroke-dasharray="4 3"/><path d="' + pth + '" fill="none" style="stroke:var(--accent)" stroke-width="2"/></svg><div class="tmeta">Running expectancy after each trade (dashed line = zero)</div>';
+    }
+    if (n >= 100) {
+      var cum = 0, pk = 0, dd = 0; v.forEach(function (x) { cum += x; if (cum > pk) pk = cum; if (pk - cum > dd) dd = pk - cum; });
+      var pf = -sum(l) > 0 ? sum(w) / -sum(l) : null;
+      var verdict = lo > 0 ? 'Edge looks real: even the low end of the range is positive.' : hi < 0 ? 'Negative edge: on average this plan loses money. Change the plan, not the lot size.' : 'Not proven yet: the range includes zero. Run another 100 trades with the same rules.';
+      var tx = ['100-trade result', 'Expectancy ' + SU(ex) + ' per trade \u00b7 Total ' + SU(sum(v)), 'Win rate ' + (wp * 100).toFixed(0) + '% \u00b7 Profit factor ' + (pf === null ? 'no losses' : pf.toFixed(2)) + ' \u00b7 Max drawdown ' + U(dd), verdict];
+      res.hidden = false;
+      tx.forEach(function (t, k) { var d = document.createElement('div'); if (k === 0) d.style.fontWeight = '700'; d.textContent = t; res.appendChild(d); });
+    }
+  }
+
+  function renderCoach() {
+    var ul = $('coach'); ul.textContent = '';
+    var t = state.trades, out = [];
+    function add(w, bad, text) { out.push({ w: w, bad: bad, text: text }); }
+    function pct(g) { return Math.round(g.w / g.n * 100) + '%'; }
+    if (isExample || t.length < 5) { var li0 = document.createElement('li'); li0.appendChild(document.createElement('i')); li0.className = ''; var s0 = document.createElement('span'); s0.textContent = 'Add at least 5 trades with session, setup and time to unlock coach insights.'; li0.appendChild(s0); ul.appendChild(li0); $('coachn').textContent = ''; return; }
+    function wb(g, label, minN, fmt) {
+      var worst = null, best = null, k;
+      for (k in g) { if (g[k].n < minN) continue; if (worst === null || g[k].pl < g[worst].pl) worst = k; if (best === null || g[k].pl > g[best].pl) best = k; }
+      if (worst !== null && g[worst].pl < 0) add(-g[worst].pl, true, label + ' ' + fmt(worst) + ' is costing you: ' + g[worst].n + ' trades, ' + pct(g[worst]) + ' win, net ' + signed(g[worst].pl) + '.');
+      if (best !== null && best !== worst && g[best].pl > 0) add(g[best].pl * 0.6, false, 'Your best ' + label.toLowerCase() + ' is ' + fmt(best) + ': ' + g[best].n + ' trades, ' + pct(g[best]) + ' win, net ' + signed(g[best].pl) + '.');
+    }
+    var id = function (x) { return x; };
+    wb(groupStats(t, function (x) { return x.session; }), 'Session', 4, id);
+    wb(groupStats(t, function (x) { return x.tag; }), 'Setup', 4, id);
+    wb(groupStats(t, function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }), 'Day', 4, id);
+    wb(groupStats(t, function (x) { return x.dir; }), 'Direction', 5, id);
+    wb(groupStats(t.filter(function (x) { return x.tm === 1 && x.t; }), function (x) { var hr = new Date(x.t).getHours(); return hr < 12 ? 'before 12:00' : hr < 16 ? '12:00-15:59' : hr < 20 ? '16:00-19:59' : '20:00 or later'; }), 'Time window', 4, id);
+    var gm = groupStats(t, function (x) { return x.mist; }), mk, topM = null;
+    for (mk in gm) if (gm[mk].n >= 2 && gm[mk].pl < 0 && (topM === null || gm[mk].pl < gm[topM].pl)) topM = mk;
+    if (topM) add(-gm[topM].pl * 1.2, true, 'Mistake "' + topM + '" cost you ' + signed(gm[topM].pl) + ' over ' + gm[topM].n + ' trades.');
+    var fl = behaviorFlags(), q = [], bg = [];
+    t.forEach(function (x, i) { if (fl[i].quick) q.push(x); if (fl[i].bigger) bg.push(x); });
+    function sumPl(a) { return a.reduce(function (s, x) { return r2(s + x.pl); }, 0); }
+    if (q.length >= 3 && sumPl(q) < 0) add(-sumPl(q) * 1.3, true, 'Trades within 15 minutes of a loss: ' + q.length + ' trades, net ' + signed(sumPl(q)) + '. After a loss, step away before the next trade.');
+    if (bg.length >= 3 && sumPl(bg) < 0) add(-sumPl(bg) * 1.3, true, 'Taking bigger lots right after a loss: ' + bg.length + ' trades, net ' + signed(sumPl(bg)) + '. Keep your size steady.');
+    var gc = groupStats(t, function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'full' : 'part') : ''; });
+    if (gc.full && gc.part && gc.full.n >= 5 && gc.part.n >= 5) add(Math.abs(gc.full.pl - gc.part.pl) * 0.5, gc.full.w / gc.full.n < gc.part.w / gc.part.n, 'With a full checklist you win ' + pct(gc.full) + ' (' + gc.full.n + ' trades) vs ' + pct(gc.part) + ' (' + gc.part.n + ' trades) when it is incomplete.');
+    var st = computeStats(t, 0);
+    if (st.n >= 10 && st.avgL > st.avgW && st.losses && st.wins) add((st.avgL - st.avgW) * st.losses * 0.5, true, 'Your average loss (' + signed(-r2(st.avgL)) + ') is bigger than your average win (' + signed(r2(st.avgW)) + '). Cut losers faster or let winners run.');
+    out.sort(function (a, b) { return b.w - a.w; });
+    if (!out.length) out.push({ bad: false, text: 'No clear pattern yet. Keep tagging session, setup and time on every trade.' });
+    out.slice(0, 4).forEach(function (o) {
+      var li = document.createElement('li'); var i = document.createElement('i'); if (!o.bad) i.className = 'g';
+      var s = document.createElement('span'); s.textContent = o.text; li.appendChild(i); li.appendChild(s); ul.appendChild(li);
+    });
+    $('coachn').textContent = 'Based on ' + t.length + ' trades. ' + (t.length < 30 ? 'Under 30 trades these are hints, not proof.' : 'Patterns, not guarantees.');
+  }
+
   function renderMatrix() {
     var box = $('bmatrix'); box.textContent = '';
     var t = state.trades.filter(function (x) { return x.pl !== 0; });
@@ -1487,7 +1677,7 @@ select { font: inherit; }
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
     breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
     breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
-    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect();
+    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula();
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -1627,7 +1817,7 @@ select { font: inherit; }
   }
 
   function backupText() {
-    return JSON.stringify({ app: 'college-trader', version: 1, exported: new Date().toISOString(), data: { start: state.start, target: state.target, contract: contractSize(), dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, cash: state.cash || [], trades: state.trades, notes: state.notes || [] } });
+    return JSON.stringify({ app: 'college-trader', version: 1, exported: new Date().toISOString(), data: { start: state.start, target: state.target, contract: contractSize(), dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, tfrom: state.tfrom || 0, cash: state.cash || [], trades: state.trades, notes: state.notes || [] } });
   }
   function backupDone(msg) {
     try { localStorage.setItem('ct-lastbackup', String(Date.now())); localStorage.removeItem('ct-bksnooze'); } catch (e) {}
@@ -1698,7 +1888,7 @@ select { font: inherit; }
     });
     cash.sort(function (a, b) { return a.t - b.t; });
     var s = num(d.start), tg = num(d.target), ct = num(d.contract), dl = num(d.dll), mg = num(d.mgoal);
-    return { start: s > 0 ? s : 125, target: tg > 0 ? tg : 130, contract: ct > 0 ? ct : 100, dll: dl > 0 ? dl : 0, mgoal: mg > 0 ? mg : 0, prop: cleanProp(d.prop), cash: cash, trades: trades, notes: notes };
+    return { start: s > 0 ? s : 125, target: tg > 0 ? tg : 130, contract: ct > 0 ? ct : 100, dll: dl > 0 ? dl : 0, mgoal: mg > 0 ? mg : 0, prop: cleanProp(d.prop), tfrom: Math.max(0, Math.floor(num(d.tfrom) || 0)), cash: cash, trades: trades, notes: notes };
   }
 
   var pendingImport = null;
@@ -1809,6 +1999,7 @@ select { font: inherit; }
     ul.textContent = '';
     var t = state.trades;
     $('empty').hidden = t.length > 0;
+    var bfl = behaviorFlags();
     var q = $('fq').value.trim().toLowerCase(), fr = $('fres').value, fs = $('fsess').value, fm = $('fmist').value, ff = flagOnly, shown = 0;
     for (var i = t.length - 1; i >= 0; i--) {
       var tr0 = t[i];
@@ -1835,6 +2026,8 @@ select { font: inherit; }
         if (tr.fees) parts.push('Fees $' + tr.fees);
         var rr = rOf(tr); if (rr !== null) parts.push(fmtR(rr));
         if (tr.mist) parts.push('Mistake: ' + tr.mist);
+        if (bfl[idx] && bfl[idx].quick) parts.push('Quick after loss');
+        if (bfl[idx] && bfl[idx].bigger) parts.push('Bigger lots after loss');
         if (typeof tr.chk === 'string') parts.push('Checklist ' + chkCount(tr) + '/5');
         if (parts.length) { var det = document.createElement('div'); det.className = 'tdet'; det.textContent = parts.join(' | '); main.appendChild(det); }
         if (tr.img) { var th = document.createElement('img'); th.className = 'thumb'; th.alt = 'Chart screenshot'; th.src = tr.img; th.onclick = function () { $('viewerimg').src = tr.img; $('viewer').hidden = false; }; main.appendChild(th); }
@@ -2027,7 +2220,7 @@ select { font: inherit; }
   function setStatus(msg) { $('status').textContent = msg || ''; }
 
   function persist() {
-    var payload = { start: state.start, target: state.target, contract: state.contract || 100, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, cash: state.cash || [], trades: state.trades, notes: state.notes || [] };
+    var payload = { start: state.start, target: state.target, contract: state.contract || 100, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, tfrom: state.tfrom || 0, cash: state.cash || [], trades: state.trades, notes: state.notes || [] };
     if (dbDoc) {
       writing = writing.then(function () { return dbDoc.set(payload); }).then(function () { setStatus('Saved'); }, function () { setStatus('Could not save. Check your connection and try again.'); });
     } else {
@@ -2036,7 +2229,7 @@ select { font: inherit; }
   }
 
   function leaveExample() {
-    if (isExample) { state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, cash: [], trades: [], notes: [] }; isExample = false; }
+    if (isExample) { state = { start: state.start, target: state.target, contract: state.contract, dll: state.dll || 0, mgoal: state.mgoal || 0, prop: state.prop || null, tfrom: 0, cash: [], trades: [], notes: [] }; isExample = false; }
   }
 
   var dir = '';
@@ -2262,6 +2455,15 @@ select { font: inherit; }
   $('resetno').onclick = function () { $('resetconfirm').hidden = true; $('resetbtn').hidden = false; };
   $('resetyes').onclick = resetAll;
   eqSetup();
+  $('h100home').onclick = function () { showTab('perf'); };
+  $('h100home').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showTab('perf'); } });
+  var h100armed = false;
+  $('h100new').onclick = function () {
+    if (!h100armed) { h100armed = true; $('h100new').textContent = 'Tap again to confirm: count from the next trade'; setTimeout(function () { h100armed = false; $('h100new').textContent = 'Start new 100-trade test from now'; }, 4000); return; }
+    h100armed = false; $('h100new').textContent = 'Start new 100-trade test from now';
+    if (isExample) return;
+    state.tfrom = state.trades.length; persist(); render();
+  };
   ['xw', 'xr', 'xl'].forEach(function (id) { $(id).addEventListener('input', updateWhatIf); });
   $('ex-real').onclick = function () { exMode = 'real'; renderExpect(); };
   $('ex-what').onclick = function () { exMode = 'what'; renderExpect(); };
@@ -2341,7 +2543,7 @@ select { font: inherit; }
 
   function applyLoaded(d) {
     if (d && Array.isArray(d.trades)) {
-      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, contract: Number(d.contract) || 100, dll: Number(d.dll) || 0, mgoal: Number(d.mgoal) || 0, prop: (d.prop && typeof d.prop === 'object') ? d.prop : null, cash: Array.isArray(d.cash) ? d.cash : [], trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
+      state = { start: Number(d.start) || 125, target: Number(d.target) || 130, contract: Number(d.contract) || 100, dll: Number(d.dll) || 0, mgoal: Number(d.mgoal) || 0, prop: (d.prop && typeof d.prop === 'object') ? d.prop : null, tfrom: Math.max(0, Math.floor(Number(d.tfrom) || 0)), cash: Array.isArray(d.cash) ? d.cash : [], trades: d.trades, notes: Array.isArray(d.notes) ? d.notes : [] };
       isExample = false;
     }
   }
