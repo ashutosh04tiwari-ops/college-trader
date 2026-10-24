@@ -119,6 +119,42 @@
 @keyframes breathe { 0%,100% { transform: scale(0.65); } 50% { transform: scale(1.15); } }
 #cool .ctime { font-family: ui-monospace, Menlo, monospace; font-size: 44px; }
 @media (prefers-reduced-motion: reduce) { #cool .cring { animation: none; } }
+
+#poster .pthought { margin: 12px auto 0; max-width: 300px; min-height: 44px; font-family: Georgia, serif; font-style: italic; font-size: 16px; line-height: 1.35; color: #ffe2b0; transition: opacity 0.4s; cursor: pointer; }
+#poster .pthought.fade { opacity: 0; }
+#poster .pthought small { display: block; margin-top: 6px; font-style: normal; font-family: system-ui, sans-serif; font-size: 11px; letter-spacing: 0.14em; color: #b9c4d8; }
+#moretools, #disc { padding: 0; }
+#disc > summary { cursor: pointer; padding: 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+#disc > summary::-webkit-details-marker { display: none; }
+#disc > summary::after { content: "+"; font-size: 22px; color: var(--accent); }
+#disc[open] > summary::after { content: "−"; }
+#disc .card { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+#moretools > summary { cursor: pointer; padding: 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+#moretools > summary::-webkit-details-marker { display: none; }
+#moretools > summary::after { content: "+"; font-size: 22px; color: var(--accent); }
+#moretools[open] > summary::after { content: "−"; }
+#moretools .card { border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.tilt { position: relative; height: 14px; border-radius: 8px; margin-top: 12px; background: linear-gradient(90deg, #3ed18a 0%, #3ed18a 28%, #ffb454 45%, #ff6b5e 70%, #ff3b3b 100%); }
+.tilt i { position: absolute; top: -5px; width: 6px; height: 24px; border-radius: 3px; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.5); transition: left 0.5s; }
+.tilt-why { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+.rule { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.rule span { flex: 1; }
+.rule button { min-height: 30px; padding: 2px 10px; font-size: 12px; }
+.rule button.broke { background: var(--loss); color: #fff; border-color: var(--loss); }
+.rule .x { background: none; border: 0; color: var(--ink-2); font-size: 18px; min-height: 30px; }
+.wi { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.wi button { min-height: 34px; padding: 4px 12px; border-radius: 16px; background: var(--bg); color: var(--ink-2); border: 1px solid var(--line); font-size: 13px; font-weight: 600; }
+.wi button.on { background: var(--accent); color: var(--on-fill); border-color: var(--accent); }
+#ritual { position: fixed; inset: 0; z-index: 150; background: radial-gradient(circle at 50% 30%, #3a1d08, #05070c 70%); display: flex; align-items: center; justify-content: center; padding: 24px; }
+#ritual[hidden] { display: none; }
+#ritual .rbox { max-width: 360px; width: 100%; color: #fff; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+#ritual h2 { margin: 0; font-family: Georgia, serif; letter-spacing: 0.08em; font-weight: 400; font-size: 24px; }
+#ritual .rcard { background: rgba(255,255,255,0.07); border-radius: 12px; padding: 12px; text-align: left; font-size: 14px; }
+#ritual .rcard b { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #ffd27a; margin-bottom: 4px; }
+#ritual .rq { font-style: italic; color: #ecd9b6; font-size: 15px; }
+.microw { display: flex; gap: 6px; margin-top: 6px; }
+.microw button { min-height: 32px; padding: 2px 12px; font-size: 13px; border-radius: 16px; }
+.microw button.rec { background: var(--loss); color: #fff; border-color: var(--loss); }
 :root[data-theme="luxury"] { --bg: #000000; --surface: #0b0a07; --ink: #f3e9d0; --ink-2: #a89b7a; --line: rgba(212,175,55,0.30); --accent: #d4af37; --accent-soft: rgba(212,175,55,0.14); --profit: #7bd88f; --loss: #ff7a6b; --on-fill: #000000; --grid: rgba(212,175,55,0.10); color-scheme: dark; }
 :root[data-theme="luxury"] h1, :root[data-theme="luxury"] .bal, :root[data-theme="luxury"] .score { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 :root[data-theme="luxury"] h1 { letter-spacing: 0.1em; text-transform: uppercase; font-size: 15px; }
@@ -374,6 +410,7 @@ select { font: inherit; }
 
 <div id="cine" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><div class="vig"></div><div class="grain"></div></div>
 
+<div id="ritual" hidden><div class="rbox"><h2 id="ritgreet">Good morning, trader</h2><div class="rcard"><b>Yesterday</b><span id="ritlast"></span></div><div class="rcard"><b>Today's rules</b><span id="ritrules" style="white-space:pre-line"></span></div><div class="rcard"><b>Next session</b><span id="ritsess"></span></div><div class="rq" id="ritq"></div><button type="button" class="b-accent" id="ritgo">Start trading day</button></div></div>
 <div id="cool" hidden><div class="cbox"><div class="cring"></div><h2>Cooldown</h2><p id="cmsg">2 losses in a row. Breathe and step away.</p><div class="ctime" id="ctime">30:00</div><p class="tmeta">Breathe in 4s, out 4s. Look at the chart later.</p><button type="button" class="b-accent" id="cclose">Okay, I will wait</button><button type="button" class="b-ghost" id="cskip" hidden>Unlock anyway</button></div></div>
 <div id="bgl" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -399,6 +436,7 @@ select { font: inherit; }
     <div class="ptag">Turning Data Into Decisions.</div>
     <div class="pline"></div>
     <div class="pgreet" id="pgreet"></div>
+    <div class="pthought" id="pthought" role="button" tabindex="0" aria-label="Next thought"></div>
   </section>
   <div id="alerts" style="display:flex;flex-direction:column;gap:12px"></div>
   <div id="banner2" class="note-banner" hidden>Showing example trades. Open the Journal tab and add your first real trade to replace them.</div>
@@ -417,6 +455,12 @@ select { font: inherit; }
     <div class="tmeta" id="goalsub" style="margin-top:6px"></div>
   </section>
 
+  <section class="card" id="sclock" aria-label="Session clock">
+    <div class="row"><span class="label">Session clock</span><button type="button" class="b-ghost" id="salert" style="min-height:30px;padding:2px 10px;font-size:12px">Alerts off</button></div>
+    <div id="srows"></div>
+    <div class="tmeta" id="snote" style="margin-top:6px">Alerts work while the app is open.</div>
+  </section>
+
   <section class="card" id="h100home" role="button" tabindex="0" aria-label="Live expectancy and 100 trade test">
     <div class="row"><span class="label">Expectancy (live)</span><span class="num" id="hexu"></span></div>
     <div class="fx" id="hform"></div>
@@ -425,32 +469,6 @@ select { font: inherit; }
     <div class="tmeta" id="h100ht" style="margin-top:6px"></div>
   </section>
 
-  <section class="card" id="xpcard" aria-label="Trader level">
-    <div class="row"><span class="label">Trader level</span><span class="num" id="xplv"></span></div>
-    <div class="bar" style="margin-top:10px"><i id="xpfill"></i></div>
-    <div class="tmeta" id="xpsub" style="margin-top:6px"></div>
-    <div class="badges" id="xpbadges"></div>
-  </section>
-
-  <section class="card" id="sclock" aria-label="Session clock">
-    <div class="row"><span class="label">Session clock</span><button type="button" class="b-ghost" id="salert" style="min-height:30px;padding:2px 10px;font-size:12px">Alerts off</button></div>
-    <div id="srows"></div>
-    <div class="tmeta" id="snote" style="margin-top:6px">Alerts work while the app is open.</div>
-  </section>
-
-  <section class="card" id="lotcalc" aria-label="Position size calculator">
-    <div class="row"><span class="label">Lot size calculator</span><span class="tmeta" id="calcbal"></span></div>
-    <div class="chips" id="calcmode" style="margin-top:10px"><button type="button" data-m="pct">Risk %</button><button type="button" data-m="usd">Risk $</button></div>
-    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-      <div class="field"><label class="tmeta" for="cr" id="crl">Risk %</label><input id="cr" type="number" inputmode="decimal" step="any" min="0"></div>
-      <div class="field"><label class="tmeta" for="cd">SL distance (price points)</label><input id="cd" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 3.5"></div>
-      <div class="field"><label class="tmeta" for="ce">Entry (optional)</label><input id="ce" type="number" inputmode="decimal" step="any" placeholder="for TP levels"></div>
-      <div class="field"><label class="tmeta" for="cs">SL price (optional)</label><input id="cs" type="number" inputmode="decimal" step="any" placeholder="or type SL price"></div>
-    </div>
-    <div class="row" style="margin-top:14px"><span class="tmeta">Lot size</span><span class="num" id="clot" style="font-size:28px">-</span></div>
-    <div class="tmeta" id="lcnote" style="margin-top:6px"></div>
-    <div class="tmeta" id="ctp" style="margin-top:4px"></div>
-  </section>
 
   <section class="stats" aria-label="Summary">
     <div class="stat"><div class="label">Net P/L</div><div class="v" id="net">+$0.00</div></div>
@@ -496,6 +514,45 @@ select { font: inherit; }
   </div>
 
   <div class="panel" id="p-journal" hidden>
+  <details class="card" id="disc" open><summary>Discipline tools: tilt, rules, level, lot size</summary>
+  <section class="card" id="tiltcard" aria-label="Tilt meter">
+    <div class="row"><span class="label">Tilt meter</span><span class="num" id="tiltnum"></span></div>
+    <div class="tilt"><i id="tiltmark"></i></div>
+    <ul class="tilt-why" id="tiltwhy"></ul>
+  </section>
+
+  <section class="card" id="rulecard" aria-label="My rules">
+    <div class="label">My rules</div>
+    <div id="rulelist"></div>
+    <div class="tmeta" id="rulesub" style="margin-top:8px"></div>
+    <div class="row2" id="ruleadd" style="margin-top:8px;align-items:end"><div class="field"><input id="rulein" type="text" maxlength="60" placeholder="Add a rule, e.g. No trade after 8pm" aria-label="New rule"></div><button type="button" class="b-accent" id="rulebtn">Add</button></div>
+  </section>
+
+  <details class="card" id="moretools"><summary>More tools: level, lot calculator</summary>
+  <section class="card" id="xpcard" aria-label="Trader level">
+    <div class="row"><span class="label">Trader level</span><span class="num" id="xplv"></span></div>
+    <div class="bar" style="margin-top:10px"><i id="xpfill"></i></div>
+    <div class="tmeta" id="xpsub" style="margin-top:6px"></div>
+    <div class="badges" id="xpbadges"></div>
+  </section>
+
+
+  <section class="card" id="lotcalc" aria-label="Position size calculator">
+    <div class="row"><span class="label">Lot size calculator</span><span class="tmeta" id="calcbal"></span></div>
+    <div class="chips" id="calcmode" style="margin-top:10px"><button type="button" data-m="pct">Risk %</button><button type="button" data-m="usd">Risk $</button></div>
+    <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div class="field"><label class="tmeta" for="cr" id="crl">Risk %</label><input id="cr" type="number" inputmode="decimal" step="any" min="0"></div>
+      <div class="field"><label class="tmeta" for="cd">SL distance (price points)</label><input id="cd" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 3.5"></div>
+      <div class="field"><label class="tmeta" for="ce">Entry (optional)</label><input id="ce" type="number" inputmode="decimal" step="any" placeholder="for TP levels"></div>
+      <div class="field"><label class="tmeta" for="cs">SL price (optional)</label><input id="cs" type="number" inputmode="decimal" step="any" placeholder="or type SL price"></div>
+    </div>
+    <div class="row" style="margin-top:14px"><span class="tmeta">Lot size</span><span class="num" id="clot" style="font-size:28px">-</span></div>
+    <div class="tmeta" id="lcnote" style="margin-top:6px"></div>
+    <div class="tmeta" id="ctp" style="margin-top:4px"></div>
+  </section>
+  </details>
+  </details>
+
   <section class="card" aria-label="Add a trade" id="addcard">
     <div class="label">Add trade</div>
     <div id="banner" class="note-banner" style="margin-top:10px" hidden>These 8 trades are examples. Add your first real trade or note and they will be removed.</div>
@@ -594,6 +651,7 @@ select { font: inherit; }
       <div class="field">
         <label class="tmeta" for="logic">1 line note</label>
         <input id="logic" type="text" maxlength="120" placeholder="London open sweep, 15m OB retest">
+        <div class="microw" id="microw"><button type="button" class="b-ghost" id="micen">🎤 English</button><button type="button" class="b-ghost" id="michi">🎤 हिंदी</button></div>
       </div>
       <div class="field">
         <span class="tmeta">Pre-trade checklist</span>
@@ -694,6 +752,8 @@ select { font: inherit; }
     <div class="kpis" id="kpis"></div>
     <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
+    <div class="bsec"><div class="label">What if I skipped...</div><div class="wi" id="wichips"></div><div class="tmeta" id="wires" style="margin-top:8px"></div></div>
+    <div class="bsec"><div class="label">Target forecast</div><div id="fcbox" class="tmeta"></div></div>
     <div class="bsec"><div class="label">9/15 EMA wise</div><div id="bema"></div></div>
     <div class="bsec"><div class="label">Support / Resistance wise</div><div id="bsr"></div></div>
     <div class="bsec"><div class="label">Mood before trade</div><div id="bmood"></div></div>
@@ -824,7 +884,7 @@ select { font: inherit; }
       <button type="button" data-b="chart">Chart glow</button>
       <button type="button" data-b="anim">Moving candles</button>
     </div>
-    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="coolbtn">Cooldown lock</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
+    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="coolbtn">Cooldown lock</button><button type="button" id="ritbtn">Morning ritual</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
@@ -1862,7 +1922,7 @@ select { font: inherit; }
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
     breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
     breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
-    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula(); if (window.__calcRun) window.__calcRun(); if (window.__xp) window.__xp();
+    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula(); if (window.__calcRun) window.__calcRun(); if (window.__xp) window.__xp(); if (window.__more) window.__more();
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -2882,6 +2942,155 @@ select { font: inherit; }
     var im = new Image(); im.onload = function () { draw(im); }; im.onerror = function () { draw(null); }; im.src = 'logo.png';
   }
   $('rstory').onclick = storyCard;
+
+  /* ---- Tilt meter ---- */
+  function todayTrades() { var k = dayKey(Date.now()); return state.trades.filter(function (t) { return t.t && dayKey(t.t) === k; }); }
+  function rulesList() { try { var a = JSON.parse(localStorage.getItem('ct-rules') || 'null'); if (Array.isArray(a)) return a.filter(function (s) { return typeof s === 'string'; }).slice(0, 8); } catch (e) {} return null; }
+  function rulesLog() { try { var o = JSON.parse(localStorage.getItem('ct-rlog') || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+  function brokenToday() { var l = rulesLog()[dayKey(Date.now())]; return Array.isArray(l) ? l.length : 0; }
+  function renderTilt() {
+    var td = todayTrades(), score = 0, why = [];
+    if (td.length) {
+      var run = 0, i; for (i = td.length - 1; i >= 0 && td[i].pl < 0; i--) run++;
+      if (run) { score += Math.min(50, run * 25); why.push(run + ' loss' + (run > 1 ? 'es' : '') + ' in a row'); }
+      if (td.length > 3) { score += Math.min(24, (td.length - 3) * 8); why.push(td.length + ' trades today'); }
+      var last = td[td.length - 1];
+      if (last.pl < 0 && last.tm === 1) { var gap = Date.now() - last.t; if (gap < 30 * 60000) { score += 20; why.push('last loss under 30 min ago'); } else if (gap < 2 * 3600000) { score += 8; why.push('last loss under 2h ago'); } }
+      if (last.mb && ['Angry', 'FOMO', 'Anxious', 'Tired'].indexOf(last.mb) >= 0) { score += 15; why.push('mood: ' + last.mb); }
+      var net = td.reduce(function (s, t) { return s + t.pl; }, 0);
+      if (state.dll > 0 && net <= -0.7 * state.dll) { score += 20; why.push('close to daily loss limit'); }
+    }
+    var bk = brokenToday(); if (bk) { score += Math.min(20, bk * 10); why.push(bk + ' rule' + (bk > 1 ? 's' : '') + ' broken'); }
+    score = Math.min(100, score);
+    var zone = score < 30 ? ['Calm', 'var(--profit)'] : score < 60 ? ['Caution', '#ffb454'] : ['TILT, stop trading', 'var(--loss)'];
+    $('tiltnum').textContent = score + ' · ' + zone[0]; $('tiltnum').style.color = zone[1];
+    $('tiltmark').style.left = 'calc(' + score + '% - 3px)';
+    var ul = $('tiltwhy'); ul.textContent = '';
+    if (!why.length) { var l0 = document.createElement('li'); l0.textContent = td.length ? 'Nothing risky so far today.' : 'Fresh start. No trades today.'; ul.appendChild(l0); }
+    why.slice(0, 4).forEach(function (w) { var l = document.createElement('li'); l.textContent = w; ul.appendChild(l); });
+  }
+
+  /* ---- My Rules ---- */
+  function saveRules(a) { try { localStorage.setItem('ct-rules', JSON.stringify(a)); } catch (e) {} }
+  function renderRules() {
+    var rules = rulesList();
+    if (rules === null) { rules = ['Stop loss before entry', 'Max 3 trades a day', 'No trade after 2 losses']; saveRules(rules); }
+    var log = rulesLog(), tk = dayKey(Date.now()), broken = Array.isArray(log[tk]) ? log[tk] : [], box = $('rulelist'); box.textContent = '';
+    rules.forEach(function (r, i) {
+      var row = document.createElement('div'); row.className = 'rule';
+      var s = document.createElement('span'); s.textContent = r;
+      var b = document.createElement('button'); b.type = 'button'; var br = broken.indexOf(i) >= 0; b.className = 'b-ghost' + (br ? ' broke' : ''); b.textContent = br ? 'Broken' : 'Kept';
+      b.onclick = function () { var l = rulesLog(), a = Array.isArray(l[tk]) ? l[tk].slice() : [], p = a.indexOf(i); if (p >= 0) a.splice(p, 1); else a.push(i); l[tk] = a; try { localStorage.setItem('ct-rlog', JSON.stringify(l)); } catch (e) {} renderRules(); renderTilt(); };
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', 'Delete rule');
+      x.onclick = function () { var a = rulesList() || []; a.splice(i, 1); saveRules(a); try { localStorage.setItem('ct-rlog', '{}'); } catch (e) {} renderRules(); renderTilt(); };
+      row.appendChild(s); row.appendChild(b); row.appendChild(x); box.appendChild(row);
+    });
+    var st0 = 0; try { st0 = parseInt(localStorage.getItem('ct-rstart') || '0', 10) || 0; if (!st0) { st0 = Date.now(); localStorage.setItem('ct-rstart', String(st0)); } } catch (e) { st0 = Date.now(); }
+    var streak = 0, d = new Date();
+    for (var k = 0; k < 365; k++) { var kk = dayKey(d.getTime()); if (log[kk] && log[kk].length) break; if (d.getTime() < st0 - 86400000) break; streak++; d.setDate(d.getDate() - 1); }
+    $('rulesub').textContent = rules.length ? 'Tap "Kept" to mark a rule broken today. Days in a row without breaking: ' + streak + (rules.length >= 8 ? ' (max 8 rules)' : '') : 'Add your own trading rules below.';
+    $('ruleadd').style.display = rules.length >= 8 ? 'none' : '';
+  }
+  $('rulebtn').onclick = function () {
+    var v = $('rulein').value.trim().slice(0, 60); if (!v) return;
+    var a = rulesList() || []; if (a.length >= 8) return; a.push(v); saveRules(a); $('rulein').value = ''; renderRules();
+  };
+
+  /* ---- What-if simulator ---- */
+  var WI = [
+    ['mist', 'Revenge / Overtrade / FOMO', function (x) { return x.mist === 'Revenge trade' || x.mist === 'Overtrade' || x.mist === 'FOMO'; }],
+    ['anym', 'Any mistake trade', function (x) { return !!x.mist; }],
+    ['nosl', 'No stop loss', function (x) { return x.sl === undefined; }],
+    ['chk', 'Incomplete checklist', function (x) { return typeof x.chk === 'string' && x.chk !== '11111'; }],
+    ['mood', 'Bad mood (Angry/FOMO/Anxious/Tired)', function (x) { return ['Angry', 'FOMO', 'Anxious', 'Tired'].indexOf(x.mb) >= 0; }],
+    ['quick', 'Quick trade after a loss (<15 min)', null]
+  ], wiOn = {};
+  function renderWhatIf() {
+    var box = $('wichips'); box.textContent = '';
+    var tr = state.trades, quick = {};
+    for (var i = 1; i < tr.length; i++) if (tr[i - 1].pl < 0 && tr[i].tm === 1 && tr[i - 1].tm === 1 && tr[i].t - tr[i - 1].t < 15 * 60000) quick[tr[i].id] = 1;
+    WI.forEach(function (w) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = wiOn[w[0]] ? 'on' : ''; b.textContent = w[1];
+      b.onclick = function () { wiOn[w[0]] = !wiOn[w[0]]; renderWhatIf(); }; box.appendChild(b);
+    });
+    var keep = tr.filter(function (x) {
+      for (var j = 0; j < WI.length; j++) { var w = WI[j]; if (!wiOn[w[0]]) continue; if (w[0] === 'quick' ? quick[x.id] : w[2](x)) return false; }
+      return true;
+    });
+    var a = computeStats(tr, 0), b2 = computeStats(keep, 0), out = $('wires');
+    if (!tr.length) { out.textContent = 'Add trades to see this.'; return; }
+    var any = Object.keys(wiOn).some(function (k) { return wiOn[k]; });
+    if (!any) { out.textContent = 'Tap what you want to skip. The app shows what your P&L would have been.'; return; }
+    var diff = r2(b2.net - a.net);
+    out.textContent = 'Actual ' + signed(a.net) + ' (' + a.n + ' trades, ' + Math.round(a.wr) + '% win)  →  Without those: ' + signed(b2.net) + ' (' + b2.n + ' trades, ' + (b2.n ? Math.round(b2.wr) : 0) + '% win). Difference ' + signed(diff) + '.';
+  }
+
+  /* ---- Target forecast ---- */
+  function renderForecast() {
+    var box = $('fcbox'), tr = state.trades, n = tr.length;
+    if (n < 10) { box.textContent = 'Need at least 10 trades for a forecast. You have ' + n + '.'; return; }
+    var bals = balances(), bal = bals[bals.length - 1], rem = r2(state.target - bal);
+    if (rem <= 0) { box.textContent = 'Target already reached at ' + money(bal) + '. Set a new target in Settings.'; return; }
+    var m = tr.reduce(function (s, t) { return s + t.pl; }, 0) / n, v = tr.reduce(function (s, t) { return s + (t.pl - m) * (t.pl - m); }, 0) / (n - 1), se = Math.sqrt(v / n);
+    var days = {}; tr.forEach(function (t) { if (t.t) days[dayKey(t.t)] = 1; }); var nd = Math.max(1, Object.keys(days).length), perDay = Math.max(0.5, n / nd);
+    function when(e) {
+      if (e <= 0) return 'not reached (edge too small)';
+      var tn = Math.ceil(rem / e), td = Math.ceil(tn / perDay), d = new Date(), c = 0;
+      while (c < td) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) c++; }
+      return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' · ' + tn + ' trades';
+    }
+    box.textContent = '';
+    var rows = [['Need', money(rem) + ' more (balance ' + money(bal) + ' → ' + money(state.target) + ')'], ['Avg per trade', signed(r2(m)) + ' ± ' + money(r2(se)) + ', ~' + perDay.toFixed(1) + ' trades/day'], ['Best case', when(m + se)], ['Normal', when(m)], ['Worst case', when(m - se)]];
+    rows.forEach(function (r) { var row = document.createElement('div'); row.className = 'srow'; var a = document.createElement('span'), b = document.createElement('span'); a.textContent = r[0]; b.textContent = r[1]; b.style.textAlign = 'right'; row.appendChild(a); row.appendChild(b); box.appendChild(row); });
+    var nt = document.createElement('div'); nt.className = 'tmeta'; nt.style.marginTop = '6px'; nt.textContent = 'Estimate from your own results. Not a promise. Markets change.'; box.appendChild(nt);
+  }
+
+  window.__more = function () { renderTilt(); renderWhatIf(); renderForecast(); };
+
+  /* ---- Voice dictation ---- */
+  (function () {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition, row = $('microw');
+    if (!SR) { row.style.display = 'none'; return; }
+    var rec = null, cur = null;
+    function go(lang, btn) {
+      if (rec) { try { rec.stop(); } catch (e) {} return; }
+      try {
+        rec = new SR(); rec.lang = lang; rec.interimResults = false; rec.maxAlternatives = 1; cur = btn; btn.classList.add('rec');
+        rec.onresult = function (ev) { var t = ev.results[0][0].transcript; var el = $('logic'); el.value = ((el.value ? el.value + ' ' : '') + t).slice(0, 120); };
+        rec.onerror = function (ev) { toast(ev.error === 'not-allowed' ? 'Allow the microphone to dictate' : 'Voice did not work, try again'); };
+        rec.onend = function () { if (cur) cur.classList.remove('rec'); rec = null; cur = null; };
+        rec.start();
+      } catch (e) { rec = null; if (cur) cur.classList.remove('rec'); }
+    }
+    $('micen').onclick = function () { go('en-IN', this); };
+    $('michi').onclick = function () { go('hi-IN', this); };
+  })();
+
+  /* ---- Morning ritual ---- */
+  var RQ = ['Plan the trade, trade the plan.', 'Profit aata hai discipline se, jaldi se nahi.', 'One good trade beats five forced ones.', 'Protect capital first. Profit is the bonus.', 'Aaj process follow karo, result khud aayega.'];
+  var ritOn = true; try { ritOn = localStorage.getItem('ct-ritoff') !== '1'; } catch (e) {}
+  function applyRit(on) { ritOn = on; try { localStorage.setItem('ct-ritoff', on ? '0' : '1'); } catch (e) {} $('ritbtn').className = on ? 'on' : ''; }
+  $('ritbtn').onclick = function () { applyRit(!ritOn); toast(ritOn ? 'Morning ritual on' : 'Morning ritual off'); if (ritOn) showRitual(true); };
+  applyRit(ritOn);
+  function showRitual(force) {
+    var tk = dayKey(Date.now());
+    try { if (!force && localStorage.getItem('ct-ritday') === tk) return; localStorage.setItem('ct-ritday', tk); } catch (e) {}
+    if (coolActive()) return;
+    var byDay = {}, keys = []; state.trades.forEach(function (t) { if (!t.t) return; var k = dayKey(t.t); if (k === tk) return; if (!byDay[k]) { byDay[k] = 0; keys.push(k); } byDay[k] += t.pl; });
+    var ly = keys.length ? 'Last trading day: ' + signed(r2(byDay[keys[keys.length - 1]])) : 'No earlier trading day yet.';
+    var rl = rulesList() || [], hr = new Date().getHours();
+    $('ritgreet').textContent = (hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening') + ', trader';
+    $('ritlast').textContent = ly; $('ritrules').textContent = rl.length ? rl.map(function (r) { return '• ' + r; }).join('\n') : 'No rules yet. Add them on Home.';
+    var now = Date.now(), best = null; SESS.forEach(function (s) { var t = sessTimes(s, now); if (t.next && (!best || t.next < best[1])) best = [s[0], t.next]; });
+    $('ritsess').textContent = best ? best[0] + ' opens in ' + fmtLeft(best[1] - now) : '';
+    $('ritq').textContent = RQ[new Date().getDate() % RQ.length];
+    $('ritual').hidden = false;
+  }
+  $('ritgo').onclick = function () { $('ritual').hidden = true; };
+  setTimeout(function () { if (ritOn) showRitual(false); }, 3300);
+
+  renderRules(); renderTilt(); renderWhatIf(); renderForecast();
+  setInterval(renderTilt, 60000);
   /* Diwali crackers */
   var dw = { ctx: null, snd: true, raf: 0, last: 0, parts: [], on: false, w: 0, h: 0, next: 0 };
   try { dw.snd = localStorage.getItem('ct-dwsnd') !== '0'; } catch (e) {}
@@ -2956,6 +3165,16 @@ select { font: inherit; }
   applyDiwali(document.documentElement.getAttribute('data-diwali') !== '0');
   document.addEventListener('touchstart', function u() { audio(); document.removeEventListener('touchstart', u); }, { passive: true });
   document.addEventListener('click', function u2() { audio(); document.removeEventListener('click', u2); });
+  var THOUGHTS = ['Plan the trade, trade the plan.', 'Capital bachao pehle, profit baad mein.', 'Ek achha trade, paanch jabardasti ke trade se behtar.', 'Loss trading ka kharcha hai, galti nahi.', 'Market kal bhi khulega. Aaj ka loss kal ka mauka hai.', 'Stop loss darr nahi, samajhdari hai.', 'Jitna bada lot, utni badi zimmedari.', 'Jaldi ka profit, der ka pachtava.', 'Discipline wo hai jo tab kaam aaye jab mann na kare.', 'Revenge trade market se nahi, apne aap se badla hai.', 'Data jhooth nahi bolta. Apna journal padho.', 'Win rate nahi, expectancy dekho.', 'Trade se pehle poochho: ye meri strategy hai ya meri umeed?', 'Chhote loss, bade profit. Yahi poora khel hai.', 'Patience bhi ek position hai.', 'FOMO ka ilaaj hai plan.', 'Sabr ka phal market mein bhi meetha hota hai.', 'Roz ek hi sawal: kya maine apne rules follow kiye?', 'Jo risk neend kharab kare, wo risk bada hai.', 'Consistency chamak se nahi, aadat se aati hai.', 'Turning Data Into Decisions.'];
+  var thIdx = Math.floor(Date.now() / 86400000) % THOUGHTS.length, thTimer = 0;
+  function showThought(i, instant) {
+    var el = $('pthought'); thIdx = (i + THOUGHTS.length) % THOUGHTS.length;
+    function put() { el.textContent = ''; el.appendChild(document.createTextNode('\u201C' + THOUGHTS[thIdx] + '\u201D')); var s = document.createElement('small'); s.textContent = 'THOUGHT ' + (thIdx + 1) + ' / ' + THOUGHTS.length; el.appendChild(s); el.classList.remove('fade'); }
+    if (instant || REDUCED) put(); else { el.classList.add('fade'); setTimeout(put, 400); }
+  }
+  function thStart() { clearInterval(thTimer); thTimer = setInterval(function () { if (document.visibilityState !== 'hidden') showThought(thIdx + 1); }, 9000); }
+  $('pthought').onclick = function () { showThought(thIdx + 1); thStart(); };
+  showThought(thIdx, true); thStart();
   (function () { var hr = new Date().getHours(); $('pgreet').textContent = (hr < 5 ? 'Late night, trader' : hr < 12 ? 'Good morning, trader' : hr < 17 ? 'Good afternoon, trader' : hr < 21 ? 'Good evening, trader' : 'Night session, trader'); })();
   $('expcsv').onclick = exportCsv;
   $('expjson').onclick = exportBackup;
