@@ -122,9 +122,23 @@
 
 #poster .pthought { margin: 12px auto 0; max-width: 320px; min-height: 104px; color: #ffe2b0; transition: opacity 0.4s; cursor: pointer; }
 #poster .pthought .sk { font-size: 19px; line-height: 1.4; font-weight: 600; color: #ffd27a; }
+#poster .pthought .af { font-family: Georgia, serif; font-size: 20px; line-height: 1.35; font-style: italic; color: #fff3d6; text-shadow: 0 0 14px rgba(255,170,60,0.6); padding-top: 6px; }
 #poster .pthought .mn { margin-top: 6px; font-size: 13px; line-height: 1.4; color: #ecd9b6; font-style: italic; }
 #poster .pthought.fade { opacity: 0; }
 #poster .pthought small { display: block; margin-top: 8px; font-size: 10px; letter-spacing: 0.14em; color: #b9c4d8; }
+#flash { position: fixed; inset: 0; z-index: 160; background: radial-gradient(circle at 50% 35%, #3a1d08, #04060b 72%); display: flex; align-items: center; justify-content: center; padding: 24px; cursor: pointer; }
+#flash[hidden] { display: none; }
+#flash .fcard { max-width: 340px; width: 100%; text-align: center; color: #fff; padding: 28px 20px 18px; border-radius: 22px; border: 1px solid rgba(255,190,110,0.4); background: rgba(255,255,255,0.05); box-shadow: 0 0 60px rgba(255,150,40,0.25); animation: fin 0.6s ease both; }
+@keyframes fin { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+#flash img { width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 0 24px rgba(255,170,60,0.6); }
+#flash .ftag { margin-top: 14px; font-size: 11px; letter-spacing: 0.2em; color: #ffd27a; }
+#flash .ftxt { margin-top: 12px; font-size: 26px; line-height: 1.4; font-weight: 600; color: #ffd27a; }
+#flash .ftxt.en { font-family: Georgia, serif; font-style: italic; font-weight: 400; color: #fff3d6; text-shadow: 0 0 16px rgba(255,170,60,0.6); }
+#flash .fmean { margin-top: 12px; font-size: 14px; line-height: 1.5; color: #ecd9b6; font-style: italic; }
+#flash .fbar { height: 3px; margin-top: 20px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
+#flash .fbar i { display: block; height: 100%; width: 100%; background: #ffb454; transform-origin: left; }
+#flash .fhint { margin-top: 10px; font-size: 11px; letter-spacing: 0.14em; color: #8f9bb0; text-transform: uppercase; }
+@media (prefers-reduced-motion: reduce) { #flash .fcard { animation: none; } }
 #moretools, #disc { padding: 0; }
 #disc > summary { cursor: pointer; padding: 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 #disc > summary::-webkit-details-marker { display: none; }
@@ -412,6 +426,7 @@ select { font: inherit; }
 
 <div id="cine" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><div class="vig"></div><div class="grain"></div></div>
 
+<div id="flash" hidden role="dialog" aria-label="Thought of the day"><div class="fcard"><img src="logo.png" alt="" width="64" height="64"><div class="ftag" id="ftag"></div><div class="ftxt" id="ftxt"></div><div class="fmean" id="fmean"></div><div class="fbar"><i id="fbar"></i></div><div class="fhint">Tap to continue</div></div></div>
 <div id="ritual" hidden><div class="rbox"><h2 id="ritgreet">Good morning, trader</h2><div class="rcard"><b>Yesterday</b><span id="ritlast"></span></div><div class="rcard"><b>Today's rules</b><span id="ritrules" style="white-space:pre-line"></span></div><div class="rcard"><b>Next session</b><span id="ritsess"></span></div><div class="rq" id="ritq"></div><button type="button" class="b-accent" id="ritgo">Start trading day</button></div></div>
 <div id="cool" hidden><div class="cbox"><div class="cring"></div><h2>Cooldown</h2><p id="cmsg">2 losses in a row. Breathe and step away.</p><div class="ctime" id="ctime">30:00</div><p class="tmeta">Breathe in 4s, out 4s. Look at the chart later.</p><button type="button" class="b-accent" id="cclose">Okay, I will wait</button><button type="button" class="b-ghost" id="cskip" hidden>Unlock anyway</button></div></div>
 <div id="bgl" aria-hidden="true"></div>
@@ -886,7 +901,7 @@ select { font: inherit; }
       <button type="button" data-b="chart">Chart glow</button>
       <button type="button" data-b="anim">Moving candles</button>
     </div>
-    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="coolbtn">Cooldown lock</button><button type="button" id="ritbtn">Morning ritual</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
+    <div class="chips"><button type="button" id="postbtn">Poster banner on Home</button><button type="button" id="coolbtn">Cooldown lock</button><button type="button" id="ritbtn">Morning ritual</button><button type="button" id="flashbtn">Flash card on open</button><button type="button" id="dwbtn">Diwali crackers</button><button type="button" id="sndbtn">Cracker sound</button></div>
     <div class="settings">
       <div class="field"><label class="tmeta" for="start">Start balance ($)</label><input id="start" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
@@ -3070,6 +3085,7 @@ select { font: inherit; }
 
   /* ---- Morning ritual ---- */
   var RQ = ['Plan the trade, trade the plan.', 'Profit aata hai discipline se, jaldi se nahi.', 'One good trade beats five forced ones.', 'Protect capital first. Profit is the bonus.', 'Aaj process follow karo, result khud aayega.'];
+  var flashOn = true; try { flashOn = localStorage.getItem('ct-flashoff') !== '1'; } catch (e) {}
   var ritOn = true; try { ritOn = localStorage.getItem('ct-ritoff') !== '1'; } catch (e) {}
   function applyRit(on) { ritOn = on; try { localStorage.setItem('ct-ritoff', on ? '0' : '1'); } catch (e) {} $('ritbtn').className = on ? 'on' : ''; }
   $('ritbtn').onclick = function () { applyRit(!ritOn); toast(ritOn ? 'Morning ritual on' : 'Morning ritual off'); if (ritOn) showRitual(true); };
@@ -3089,7 +3105,7 @@ select { font: inherit; }
     $('ritual').hidden = false;
   }
   $('ritgo').onclick = function () { $('ritual').hidden = true; };
-  setTimeout(function () { if (ritOn) showRitual(false); }, 3300);
+  setTimeout(function () { if (window.__flash && flashOn) window.__flash(); else if (ritOn) showRitual(false); }, 3300);
 
   renderRules(); renderTilt(); renderWhatIf(); renderForecast();
   setInterval(renderTilt, 60000);
@@ -3167,7 +3183,7 @@ select { font: inherit; }
   applyDiwali(document.documentElement.getAttribute('data-diwali') !== '0');
   document.addEventListener('touchstart', function u() { audio(); document.removeEventListener('touchstart', u); }, { passive: true });
   document.addEventListener('click', function u2() { audio(); document.removeEventListener('click', u2); });
-  var THOUGHTS = [
+  var SHLOKAS = [
     ['कर्मण्येवाधिकारस्ते मा फलेषु कदाचन', '2.47', 'Adhikar sirf karm par hai, phal par kabhi nahi. Trade lo, result chhodo.'],
     ['समत्वं योग उच्यते', '2.48', 'Jeet-haar mein sam rehna hi yog hai.'],
     ['योगः कर्मसु कौशलम्', '2.50', 'Karm mein kushalta hi yog hai. Skill banao.'],
@@ -3190,21 +3206,52 @@ select { font: inherit; }
     ['तस्मादसक्तः सततं कार्यं कर्म समाचर', '3.19', 'Anasakt hokar apna kartavya karte raho.'],
     ['क्षुद्रं हृदयदौर्बल्यं त्यक्त्वोत्तिष्ठ परन्तप', '2.3', 'Hriday ki chhoti kamzori chhodo, uth khade ho.']
   ];
+  var AFFIRM = [
+    'My life has changed 360 degrees in just 6 months.',
+    'I am becoming the trader I always dreamed of being.',
+    'Every day I grow more disciplined, calm and focused.',
+    'Money flows to me through skill, patience and consistency.',
+    'I trust my process. I follow my rules. I win the day.',
+    'I am already living my new life, and gratitude makes it stronger.',
+    'I attract opportunities because I prepare for them.'
+  ];
+  var THOUGHTS = [];
+  SHLOKAS.forEach(function (s, i) { THOUGHTS.push(s); if (i % 3 === 2 && AFFIRM[(i - 2) / 3]) THOUGHTS.push([AFFIRM[(i - 2) / 3], 'M', '']); });
   var thIdx = Math.floor(Date.now() / 86400000) % THOUGHTS.length, thTimer = 0;
   function showThought(i, instant) {
     var el = $('pthought'); thIdx = (i + THOUGHTS.length) % THOUGHTS.length;
     function put() {
       var t = THOUGHTS[thIdx]; el.textContent = '';
-      var a = document.createElement('div'); a.className = 'sk'; a.textContent = t[0];
+      var a = document.createElement('div'); a.className = t[1] === 'M' ? 'af' : 'sk'; a.textContent = t[0];
       var m = document.createElement('div'); m.className = 'mn'; m.textContent = t[2];
-      var s = document.createElement('small'); s.textContent = 'BHAGAVAD GITA ' + t[1] + '  ·  ' + (thIdx + 1) + ' / ' + THOUGHTS.length;
-      el.appendChild(a); el.appendChild(m); el.appendChild(s); el.classList.remove('fade');
+      var s = document.createElement('small'); s.textContent = (t[1] === 'M' ? 'MANIFESTATION' : 'BHAGAVAD GITA ' + t[1]) + '  ·  ' + (thIdx + 1) + ' / ' + THOUGHTS.length;
+      el.appendChild(a); if (t[2]) el.appendChild(m); el.appendChild(s); el.classList.remove('fade');
     }
     if (instant || REDUCED) put(); else { el.classList.add('fade'); setTimeout(put, 400); }
   }
   function thStart() { clearInterval(thTimer); thTimer = setInterval(function () { if (document.visibilityState !== 'hidden') showThought(thIdx + 1); }, 12000); }
   $('pthought').onclick = function () { showThought(thIdx + 1); thStart(); };
   showThought(thIdx, true); thStart();
+  var flashTimer = 0;
+  function closeFlash() { clearTimeout(flashTimer); $('flash').hidden = true; if (ritOn) showRitual(false); }
+  window.__flash = function () {
+    if (coolActive()) return;
+    var last = -1; try { last = parseInt(localStorage.getItem('ct-lastflash') || '-1', 10); } catch (e) {}
+    var i = Math.floor(Math.random() * THOUGHTS.length); if (i === last) i = (i + 1) % THOUGHTS.length;
+    try { localStorage.setItem('ct-lastflash', String(i)); } catch (e) {}
+    var t = THOUGHTS[i], aff = t[1] === 'M';
+    $('ftag').textContent = aff ? 'MANIFESTATION' : 'BHAGAVAD GITA ' + t[1];
+    $('ftxt').textContent = t[0]; $('ftxt').className = 'ftxt' + (aff ? ' en' : '');
+    $('fmean').textContent = t[2] || ''; $('fmean').style.display = t[2] ? '' : 'none';
+    var bar = $('fbar'); bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
+    $('flash').hidden = false;
+    setTimeout(function () { bar.style.transition = 'transform 9s linear'; bar.style.transform = 'scaleX(0)'; }, 50);
+    clearTimeout(flashTimer); flashTimer = setTimeout(closeFlash, 9200);
+  };
+  $('flash').onclick = closeFlash;
+  function applyFlash(on) { flashOn = on; try { localStorage.setItem('ct-flashoff', on ? '0' : '1'); } catch (e) {} $('flashbtn').className = on ? 'on' : ''; }
+  $('flashbtn').onclick = function () { applyFlash(!flashOn); toast(flashOn ? 'Flash card on' : 'Flash card off'); if (flashOn) window.__flash(); };
+  applyFlash(flashOn);
   (function () { var hr = new Date().getHours(); $('pgreet').textContent = (hr < 5 ? 'Late night, trader' : hr < 12 ? 'Good morning, trader' : hr < 17 ? 'Good afternoon, trader' : hr < 21 ? 'Good evening, trader' : 'Night session, trader'); })();
   $('expcsv').onclick = exportCsv;
   $('expjson').onclick = exportBackup;
