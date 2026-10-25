@@ -156,6 +156,7 @@
 .rule { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .rule span { flex: 1; }
 .rule button { min-height: 30px; padding: 2px 10px; font-size: 12px; }
+.rule button.kept { background: var(--profit); color: #000; border-color: var(--profit); }
 .rule button.broke { background: var(--loss); color: #fff; border-color: var(--loss); }
 .rule .x { background: none; border: 0; color: var(--ink-2); font-size: 18px; min-height: 30px; }
 .wi { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -545,7 +546,25 @@ select { font: inherit; }
     <div class="row2" id="ruleadd" style="margin-top:8px;align-items:end"><div class="field"><input id="rulein" type="text" maxlength="60" placeholder="Add a rule, e.g. No trade after 8pm" aria-label="New rule"></div><button type="button" class="b-accent" id="rulebtn">Add</button></div>
   </section>
 
-  <details class="card" id="moretools"><summary>More tools: level, lot calculator</summary>
+  <details class="card" id="moretools"><summary>More tools: bias, lot ladder, pay yourself, level, calculator</summary>
+  <section class="card" id="biascard" aria-label="Daily bias">
+    <div class="label">Today's bias</div>
+    <div class="chips" id="biasbtns"></div>
+    <div id="biaslist" style="margin-top:8px"></div>
+    <div class="tmeta" id="biassub" style="margin-top:6px"></div>
+  </section>
+  <section class="card" id="ladcard" aria-label="Lot ladder">
+    <div class="row"><span class="label">Lot ladder</span><span class="num" id="ld-out"></span></div>
+    <div class="row2" style="margin-top:10px"><div class="field"><label class="tmeta" for="ld-base">Base lot</label><input id="ld-base" type="number" inputmode="decimal" step="any" placeholder="0.02"></div><div class="field"><label class="tmeta" for="ld-g">Growth % per step</label><input id="ld-g" type="number" inputmode="decimal" step="any" placeholder="10"></div></div>
+    <div class="row2"><div class="field"><label class="tmeta" for="ld-st">Lot added per step</label><input id="ld-st" type="number" inputmode="decimal" step="any" placeholder="0.01"></div><div class="field"><label class="tmeta" for="ld-cut">Cut at drawdown %</label><input id="ld-cut" type="number" inputmode="decimal" step="any" placeholder="5"></div></div>
+    <div class="field"><label class="tmeta" for="ld-f">Cut factor (0.5 = half lot)</label><input id="ld-f" type="number" inputmode="decimal" step="any" placeholder="0.5"></div>
+    <div class="tmeta" id="ld-why" style="margin-top:6px"></div>
+  </section>
+  <section class="card" id="paycard" aria-label="Pay yourself">
+    <div class="label">Pay yourself</div>
+    <div class="field" style="margin-top:8px"><label class="tmeta" for="pay-p">Withdraw % of monthly profit</label><input id="pay-p" type="number" inputmode="decimal" step="any" min="0" max="100"></div>
+    <div id="pay-out" style="margin-top:6px"></div>
+  </section>
   <section class="card" id="xpcard" aria-label="Trader level">
     <div class="row"><span class="label">Trader level</span><span class="num" id="xplv"></span></div>
     <div class="bar" style="margin-top:10px"><i id="xpfill"></i></div>
@@ -665,6 +684,25 @@ select { font: inherit; }
           <select id="ma"><option value="">-</option><option>Calm</option><option>Confident</option><option>Anxious</option><option>FOMO</option><option>Angry</option><option>Tired</option></select>
         </div>
       </div>
+      <div class="row2">
+        <div class="field">
+          <label class="tmeta" for="gr">Execution grade</label>
+          <select id="gr"><option value="">-</option><option value="A">A: perfect</option><option value="B">B: okay</option><option value="C">C: poor</option></select>
+        </div>
+        <div class="field">
+          <label class="tmeta" for="fp">Followed my plan?</label>
+          <select id="fp"><option value="">-</option><option>Yes</option><option>Partly</option><option>No</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="tmeta" for="nw">News around the trade</label>
+        <select id="nw"><option value="">None</option><option>NFP</option><option>CPI</option><option>FOMC / Fed</option><option>Fed speech</option><option>Other news</option></select>
+      </div>
+      <div class="row2">
+        <div class="field"><label class="tmeta" for="lo">Worst price in trade</label><input id="lo" type="number" inputmode="decimal" step="any" placeholder="lowest / highest against you"></div>
+        <div class="field"><label class="tmeta" for="hi">Best price in trade</label><input id="hi" type="number" inputmode="decimal" step="any" placeholder="best move in your favor"></div>
+      </div>
+      <div class="field"><label class="tmeta" for="xt">Exit time (optional)</label><input id="xt" type="time"></div>
       <div class="field">
         <label class="tmeta" for="logic">1 line note</label>
         <input id="logic" type="text" maxlength="120" placeholder="London open sweep, 15m OB retest">
@@ -769,6 +807,15 @@ select { font: inherit; }
     <div class="kpis" id="kpis"></div>
     <div class="bsec"><div class="label">Session wise</div><div id="bsess"></div></div>
     <div class="bsec"><div class="label">Logic wise</div><div id="blogic"></div></div>
+    <div class="bsec"><div class="label">Compare</div><div class="seg" id="cmpmode" style="margin-top:8px"><button type="button" data-m="week">Week vs week</button><button type="button" data-m="month">Month vs month</button></div><div id="cmpbox" style="margin-top:10px"></div></div>
+    <div class="bsec"><div class="label">Underwater chart (drawdown)</div><div id="uwchart"></div><div class="tmeta" id="uwsub" style="margin-top:6px"></div></div>
+    <div class="bsec"><div class="label">R-multiples</div><div id="rview"></div></div>
+    <div class="bsec"><div class="label">MAE / MFE: stop and target check</div><div id="maebox"></div></div>
+    <div class="bsec"><div class="label">Hold time</div><div id="holdbox"></div></div>
+    <div class="bsec"><div class="label">Pro stats: drawdown &amp; risk</div><div id="prostats"></div></div>
+    <div class="bsec"><div class="label">Execution grade</div><div id="bgrade"></div></div>
+    <div class="bsec"><div class="label">Followed my plan?</div><div id="bplan"></div></div>
+    <div class="bsec"><div class="label">News trades</div><div id="bnews"></div></div>
     <div class="bsec"><div class="label">What if I skipped...</div><div class="wi" id="wichips"></div><div class="tmeta" id="wires" style="margin-top:8px"></div></div>
     <div class="bsec"><div class="label">Target forecast</div><div id="fcbox" class="tmeta"></div></div>
     <div class="bsec"><div class="label">9/15 EMA wise</div><div id="bema"></div></div>
@@ -844,6 +891,10 @@ select { font: inherit; }
   </div>
 
   <div class="panel" id="p-reports" hidden>
+  <section class="card" aria-label="Weekly review" id="wrcard">
+    <div class="row"><span class="label">Weekly review (last 7 days)</span><button type="button" class="b-ghost" id="wrcopy" style="min-height:30px;padding:2px 10px;font-size:12px">Copy</button></div>
+    <div id="wrbody" style="margin-top:8px;font-size:14px"></div>
+  </section>
   <section class="card" aria-label="Report">
     <div class="label">Report</div>
     <div class="seg" style="margin-top:10px">
@@ -907,6 +958,7 @@ select { font: inherit; }
       <div class="field"><label class="tmeta" for="target">Target ($)</label><input id="target" type="number" inputmode="decimal" step="0.01" min="0"></div>
       <div class="field"><label class="tmeta" for="contract">Oz per lot (gold = 100)</label><input id="contract" type="number" inputmode="decimal" step="any" min="0"></div>
       <div class="field"><label class="tmeta" for="dll">Daily loss limit ($, 0 = off)</label><input id="dll" type="number" inputmode="decimal" step="any" min="0"></div>
+      <div class="field"><label class="tmeta" for="mtd">Max trades per day (0 = off)</label><input id="mtd" type="number" inputmode="numeric" step="1" min="0"></div>
       <div class="field"><label class="tmeta" for="mgoal">Monthly goal ($, 0 = off)</label><input id="mgoal" type="number" inputmode="decimal" step="any" min="0"></div>
     </div>
     <div class="confirm">
@@ -1936,10 +1988,13 @@ select { font: inherit; }
     breakdown('bema', function (x) { return x.ema; }, ['Cross up', 'Cross down', 'Pullback to EMA', 'Against EMA'], 'Pick a 9/15 EMA option when adding a trade and it will show here.');
     breakdown('bsr', function (x) { return x.sr; }, ['At support', 'At resistance', 'S/R flip', 'Mid-range'], 'Pick a Support / Resistance option when adding a trade and it will show here.');
     breakdown('bmood', function (x) { return x.mb; }, ['Calm', 'Confident', 'Anxious', 'FOMO', 'Angry', 'Tired'], 'Pick your mood before a trade and win rate by mood will show here.');
+    breakdown('bgrade', function (x) { return x.gr ? 'Grade ' + x.gr : ''; }, ['Grade A', 'Grade B', 'Grade C'], 'Grade your execution (A, B or C) when adding a trade.');
+    breakdown('bplan', function (x) { return x.fp; }, ['Yes', 'Partly', 'No'], 'Mark whether you followed your plan when adding a trade.');
+    breakdown('bnews', function (x) { return x.nw; }, ['NFP', 'CPI', 'FOMC / Fed', 'Fed speech', 'Other news'], 'Tag news trades and see how they perform.');
     breakdown('bdir', function (x) { return x.dir; }, ['Buy', 'Sell'], 'Choose Buy or Sell when adding a trade and it will show here.');
     breakdown('bmist', function (x) { return x.mist; }, ['FOMO', 'Early exit', 'No SL', 'Moved SL', 'Overtrade', 'Revenge trade', 'Oversized', 'News trade'], 'Tag a mistake on a trade and its cost will show here.');
     breakdown('bchk', function (x) { return typeof x.chk === 'string' ? (x.chk === '11111' ? 'Full checklist (5/5)' : 'Incomplete checklist') : ''; }, ['Full checklist (5/5)', 'Incomplete checklist'], 'Tick the pre-trade checklist when adding trades to compare results.');
-    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula(); if (window.__calcRun) window.__calcRun(); if (window.__xp) window.__xp(); if (window.__more) window.__more();
+    renderHeat(); renderPlaybook(); ppRender(); renderMatrix(); renderExpect(); renderAfter(); renderCoach(); renderH100(); renderHomeFormula(); if (window.__calcRun) window.__calcRun(); if (window.__xp) window.__xp(); if (window.__more) window.__more(); if (window.__pro2) window.__pro2();
     breakdown('bweek', function (x) { return x.t ? DOW[new Date(x.t).getDay()] : ''; }, ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], 'Add dated trades to see results by day of the week.');
   }
 
@@ -2128,7 +2183,9 @@ select { font: inherit; }
       var nt = str(x.note, 300); if (nt && !lg) o.note = nt;
       var slv = num(x.sl); if (slv !== null && x.sl !== '' && x.sl !== null) o.sl = slv;
       var ms = str(x.mist, 40); if (ms) o.mist = ms;
-      ['ema', 'sr', 'mb', 'ma'].forEach(function (k) { var v = str(x[k], 30); if (v) o[k] = v; });
+      ['ema', 'sr', 'mb', 'ma', 'gr', 'fp', 'nw'].forEach(function (k) { var v = str(x[k], 30); if (v) o[k] = v; });
+      ['lo', 'hi'].forEach(function (k) { var v = num(x[k]); if (v !== null && x[k] !== '' && x[k] !== null) o[k] = v; });
+      if (typeof x.xt === 'string' && /^\d\d:\d\d$/.test(x.xt)) o.xt = x.xt;
       if (x.flag === true) o.flag = true;
       if (x.tm === 1) o.tm = 1;
       if (typeof x.chk === 'string' && /^[01]{5}$/.test(x.chk)) o.chk = x.chk;
@@ -2271,7 +2328,7 @@ select { font: inherit; }
       if (fs && tr0.session !== fs) continue;
       if (fm === '_any' ? !tr0.mist : (fm && tr0.mist !== fm)) continue;
       if (ff && !tr0.flag) continue;
-      if (q && [tr0.tag, tr0.logic, tr0.note, tr0.mist, tr0.session, tr0.dir, tr0.ema, tr0.sr, tr0.mb].join(' ').toLowerCase().indexOf(q) < 0) continue;
+      if (q && [tr0.tag, tr0.logic, tr0.note, tr0.mist, tr0.session, tr0.dir, tr0.ema, tr0.sr, tr0.mb, tr0.gr, tr0.fp, tr0.nw].join(' ').toLowerCase().indexOf(q) < 0) continue;
       shown++;
       (function (idx) {
         var tr = t[idx];
@@ -2558,7 +2615,7 @@ select { font: inherit; }
   }
   function resetForm() {
     ['ent', 'ext', 'lots', 'fees', 'amt', 'logic', 'sl'].forEach(function (i) { $(i).value = ''; });
-    $('sess').value = ''; $('ltag').value = ''; $('mist').value = ''; $('ema').value = ''; $('sr').value = ''; $('mb').value = ''; $('ma').value = '';
+    $('sess').value = ''; $('ltag').value = ''; $('mist').value = ''; $('lo').value = ''; $('hi').value = ''; $('xt').value = ''; $('gr').value = ''; $('fp').value = ''; $('nw').value = ''; $('ema').value = ''; $('sr').value = ''; $('mb').value = ''; $('ma').value = '';
     for (var i = 0; i < 5; i++) $('chk' + i).checked = false;
     setShot(null); $('shot').value = '';
     dir = ''; $('dirb').className = ''; $('dirs').className = '';
@@ -2579,7 +2636,7 @@ select { font: inherit; }
     if (tr.fees !== undefined) $('fees').value = tr.fees;
     if (tr.sl !== undefined) $('sl').value = tr.sl;
     $('sess').value = tr.session || ''; $('ltag').value = tr.tag || ''; $('mist').value = tr.mist || '';
-    $('ema').value = tr.ema || ''; $('sr').value = tr.sr || ''; $('mb').value = tr.mb || ''; $('ma').value = tr.ma || '';
+    $('lo').value = tr.lo !== undefined ? tr.lo : ''; $('hi').value = tr.hi !== undefined ? tr.hi : ''; $('xt').value = tr.xt || ''; $('gr').value = tr.gr || ''; $('fp').value = tr.fp || ''; $('nw').value = tr.nw || ''; $('ema').value = tr.ema || ''; $('sr').value = tr.sr || ''; $('mb').value = tr.mb || ''; $('ma').value = tr.ma || '';
     $('logic').value = tr.logic || tr.note || '';
     if (typeof tr.chk === 'string') for (var i = 0; i < 5; i++) $('chk' + i).checked = tr.chk.charAt(i) === '1';
     if (tr.entry === undefined || tr.exit === undefined) $('amt').value = Math.abs(tr.pl);
@@ -2629,6 +2686,11 @@ select { font: inherit; }
     if ($('ltag').value) tr.tag = $('ltag').value;
     if ($('mist').value) tr.mist = $('mist').value;
     if ($('ema').value) tr.ema = $('ema').value;
+    if ($('gr').value) tr.gr = $('gr').value;
+    var lov = numv('lo'), hiv = numv('hi'); if (lov !== null) tr.lo = lov; if (hiv !== null) tr.hi = hiv;
+    if ($('xt').value) tr.xt = $('xt').value;
+    if ($('fp').value) tr.fp = $('fp').value;
+    if ($('nw').value) tr.nw = $('nw').value;
     if ($('sr').value) tr.sr = $('sr').value;
     if ($('mb').value) tr.mb = $('mb').value;
     if ($('ma').value) tr.ma = $('ma').value;
@@ -2649,6 +2711,7 @@ select { font: inherit; }
     var p = calcPL();
     if (p === null) { $('err').textContent = 'Choose Buy or Sell and fill in entry, exit and lots, or enter an amount below.'; return; }
     if (coolActive() && !editId) { showCool(); return; }
+    if (mtdBlock()) return;
     saveTrade(p);
   }
 
@@ -2656,6 +2719,7 @@ select { font: inherit; }
     var v = numv('amt');
     if (v === null || v <= 0) { $('err').textContent = 'Enter an amount above 0, like 1.50.'; $('amt').focus(); return; }
     if (coolActive() && !editId) { showCool(); return; }
+    if (mtdBlock()) return;
     saveTrade(r2(sign * v));
   }
 
@@ -3109,6 +3173,310 @@ select { font: inherit; }
 
   renderRules(); renderTilt(); renderWhatIf(); renderForecast();
   setInterval(renderTilt, 60000);
+
+  /* ---- Pro stats: drawdown, SQN, Kelly, Monte Carlo ---- */
+  function srow(box, a, b) { var row = document.createElement('div'); row.className = 'srow'; var x = document.createElement('span'), y = document.createElement('span'); x.textContent = a; y.textContent = b; y.style.textAlign = 'right'; row.appendChild(x); row.appendChild(y); box.appendChild(row); }
+  function renderProStats() {
+    var box = $('prostats'), tr = state.trades, n = tr.length; box.textContent = '';
+    if (n < 10) { box.className = 'tmeta'; box.textContent = 'Need at least 10 trades. You have ' + n + '.'; return; }
+    box.className = '';
+    var eq = state.start, peak = eq, maxDD = 0, maxPct = 0, len = 0, maxLen = 0, i, wins = 0, sw = 0, sl = 0, nl = 0, sum = 0;
+    tr.forEach(function (t) {
+      eq = r2(eq + t.pl); sum += t.pl;
+      if (t.pl > 0) { wins++; sw += t.pl; } else if (t.pl < 0) { nl++; sl += -t.pl; }
+      if (eq >= peak) { peak = eq; len = 0; } else { len++; var dd = peak - eq; if (dd > maxDD) maxDD = dd; if (peak > 0 && dd / peak > maxPct) maxPct = dd / peak; if (len > maxLen) maxLen = len; }
+    });
+    var curDD = peak - eq, mean = sum / n, sd = Math.sqrt(tr.reduce(function (s, t) { return s + (t.pl - mean) * (t.pl - mean); }, 0) / (n - 1)) || 0;
+    var sqn = sd > 0 ? Math.sqrt(Math.min(n, 100)) * mean / sd : 0, sqnL = sqn < 1.6 ? 'weak' : sqn < 2 ? 'below average' : sqn < 2.5 ? 'average' : sqn < 3 ? 'good' : 'excellent';
+    var p = wins / n, aw = wins ? sw / wins : 0, al = nl ? sl / nl : 0, kelly = (aw > 0 && al > 0) ? p - (1 - p) / (aw / al) : null;
+    srow(box, 'Max drawdown', money(r2(maxDD)) + ' (' + (maxPct * 100).toFixed(1) + '% of peak)');
+    srow(box, 'Current drawdown', curDD > 0 ? money(r2(curDD)) : 'At new high');
+    srow(box, 'Longest time under water', maxLen + ' trades');
+    srow(box, 'Recovery factor', maxDD > 0 ? (sum / maxDD).toFixed(2) : '-');
+    srow(box, 'SQN (system quality)', sqn.toFixed(2) + ' · ' + sqnL);
+    srow(box, 'Kelly risk size', kelly === null ? '-' : kelly <= 0 ? 'No edge (0%)' : (kelly * 100).toFixed(1) + '% (half-Kelly ' + (kelly * 50).toFixed(1) + '%)');
+    // Monte Carlo: resample own trades, 100 trades ahead
+    var bals = balances(), b0 = bals[bals.length - 1], seed = 12345, RUNS = 2000, H = 100, finals = [], hit = 0;
+    function rnd() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+    var pls = tr.map(function (t) { return t.pl; });
+    for (var r = 0; r < RUNS; r++) {
+      var b = b0, low = b0;
+      for (i = 0; i < H; i++) { b += pls[Math.floor(rnd() * n)]; if (b < low) low = b; }
+      finals.push(b); if (b0 > 0 && low <= b0 * 0.5) hit++;
+    }
+    finals.sort(function (a, c) { return a - c; });
+    srow(box, 'Chance of losing 50% (next 100 trades)', (hit / RUNS * 100).toFixed(1) + '%');
+    srow(box, 'After 100 trades (bad / typical / good)', money(r2(finals[Math.floor(RUNS * 0.05)])) + ' / ' + money(r2(finals[Math.floor(RUNS * 0.5)])) + ' / ' + money(r2(finals[Math.floor(RUNS * 0.95)])));
+    var nt = document.createElement('div'); nt.className = 'tmeta'; nt.style.marginTop = '8px'; nt.textContent = 'Simulation reshuffles your own past trades at the same size. It is an estimate, not a prediction.'; box.appendChild(nt);
+  }
+
+  /* ---- Weekly review ---- */
+  var wrText = '';
+  function renderWeekly() {
+    var box = $('wrbody'); box.textContent = '';
+    var cut = Date.now() - 7 * 86400000, list = state.trades.filter(function (t) { return t.t && t.t >= cut; });
+    if (!list.length) { wrText = ''; box.className = 'tmeta'; box.textContent = 'No trades in the last 7 days.'; return; }
+    box.className = '';
+    var st = computeStats(list, 0), lines = [], byDay = {}, DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    list.forEach(function (t) { var k = dayKey(t.t); if (!byDay[k]) byDay[k] = { pl: 0, t: t.t }; byDay[k].pl += t.pl; });
+    var dk = Object.keys(byDay), best = dk[0], worst = dk[0]; dk.forEach(function (k) { if (byDay[k].pl > byDay[best].pl) best = k; if (byDay[k].pl < byDay[worst].pl) worst = k; });
+    lines.push('Net ' + signed(st.net) + ' in ' + st.n + ' trades, win rate ' + Math.round(st.wr) + '%.');
+    lines.push('Best day: ' + DN[new Date(byDay[best].t).getDay()] + ' ' + signed(r2(byDay[best].pl)) + '. Worst day: ' + DN[new Date(byDay[worst].t).getDay()] + ' ' + signed(r2(byDay[worst].pl)) + '.');
+    var mc = {}; list.forEach(function (t) { if (t.mist && t.pl < 0) mc[t.mist] = (mc[t.mist] || 0) + t.pl; });
+    var mk = Object.keys(mc).sort(function (a, b) { return mc[a] - mc[b]; }), top = mk[0];
+    if (top) lines.push('Costliest mistake: ' + top + ' (' + signed(r2(mc[top])) + ').');
+    var fp = list.filter(function (t) { return t.fp; }), fy = fp.filter(function (t) { return t.fp === 'Yes'; });
+    if (fp.length) lines.push('Followed plan on ' + fy.length + ' of ' + fp.length + ' rated trades.');
+    var ga = list.filter(function (t) { return t.gr === 'A'; }), gc = list.filter(function (t) { return t.gr === 'C'; });
+    if (ga.length || gc.length) lines.push('Grade A trades: ' + ga.length + ' (' + signed(r2(ga.reduce(function (s, t) { return s + t.pl; }, 0))) + '), grade C: ' + gc.length + ' (' + signed(r2(gc.reduce(function (s, t) { return s + t.pl; }, 0))) + ').');
+    var inc = list.filter(function (t) { return typeof t.chk === 'string' && t.chk !== '11111'; });
+    var next = top ? 'Next week: no "' + top + '" trades. Write it as a rule.' : (inc.length > list.length / 2 ? 'Next week: finish the checklist before every trade.' : (st.net < 0 ? 'Next week: cut size by half until you have 3 green days.' : 'Next week: keep the same process. Do not raise size just because you won.'));
+    lines.push(next);
+    wrText = 'Weekly review (last 7 days)\n' + lines.join('\n');
+    lines.forEach(function (l, i) { var p = document.createElement('p'); p.style.margin = '6px 0'; p.style.fontWeight = i === lines.length - 1 ? '700' : '400'; p.textContent = l; box.appendChild(p); });
+  }
+  $('wrcopy').onclick = function () {
+    if (!wrText) { toast('Nothing to copy yet'); return; }
+    try { navigator.clipboard.writeText(wrText).then(function () { toast('Weekly review copied'); }, function () { toast('Could not copy'); }); } catch (e) { toast('Could not copy'); }
+  };
+
+  /* ---- Max trades per day ---- */
+  function mtdLimit() { try { return parseInt(localStorage.getItem('ct-mtd') || '0', 10) || 0; } catch (e) { return 0; } }
+  var mtdArm = 0;
+  function mtdBlock() {
+    var lim = mtdLimit(); if (!(lim > 0) || editId) return false;
+    if (todayTrades().length < lim) return false;
+    if (Date.now() - mtdArm < 6000) { mtdArm = 0; return false; }
+    mtdArm = Date.now(); $('err').textContent = 'Daily trade limit reached (' + lim + '). Tap save again within 6 seconds only if this trade is in your plan.'; return true;
+  }
+  $('mtd').value = mtdLimit() || '';
+  $('mtd').addEventListener('change', function () { var v = Math.max(0, Math.floor(parseFloat($('mtd').value) || 0)); try { localStorage.setItem('ct-mtd', String(v)); } catch (e) {} $('mtd').value = v || ''; });
+
+  window.__pro2 = function () { renderProStats(); renderWeekly(); };
+  window.__pro2();
+
+  /* ---- Week / Month compare ---- */
+  var cmpMode = 'week';
+  try { cmpMode = localStorage.getItem('ct-cmp') === 'month' ? 'month' : 'week'; } catch (e) {}
+  function cmpRanges() {
+    var now = new Date(), a, b, c;
+    if (cmpMode === 'month') {
+      a = new Date(now.getFullYear(), now.getMonth(), 1).getTime(); b = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime(); c = a;
+      return { cur: [a, Infinity], prev: [b, c], names: [now.toLocaleDateString([], { month: 'long' }), new Date(b).toLocaleDateString([], { month: 'long' })] };
+    }
+    var dow = (now.getDay() + 6) % 7, mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow).getTime(), pm = mon - 7 * 86400000;
+    return { cur: [mon, Infinity], prev: [pm, mon], names: ['This week', 'Last week'] };
+  }
+  function cmpStats(list) {
+    var st = computeStats(list, 0), mist = list.filter(function (t) { return t.mist; }).length, ck = list.filter(function (t) { return typeof t.chk === 'string'; }), full = ck.filter(function (t) { return t.chk === '11111'; }).length;
+    return { st: st, n: list.length, net: st.net, wr: list.length ? st.wr : null, pf: list.length ? fmtPF(st) : '-', exp: list.length ? st.net / list.length : null, mist: mist, chk: ck.length ? full / ck.length * 100 : null };
+  }
+  function renderCompare() {
+    var R = cmpRanges(), box = $('cmpbox'); box.textContent = '';
+    Array.prototype.forEach.call($('cmpmode').children, function (b) { b.className = b.getAttribute('data-m') === cmpMode ? 'sel' : ''; });
+    function pick(r) { return state.trades.filter(function (t) { return t.t && t.t >= r[0] && t.t < r[1]; }); }
+    var A = cmpStats(pick(R.cur)), B = cmpStats(pick(R.prev));
+    if (!A.n && !B.n) { box.className = 'tmeta'; box.textContent = 'No dated trades in these periods yet.'; return; }
+    box.className = '';
+    var hd = document.createElement('div'); hd.className = 'srow'; hd.style.fontSize = '12px'; hd.style.color = 'var(--ink-2)';
+    [['', 'l'], [R.names[0], 'r'], [R.names[1], 'r'], ['Change', 'r']].forEach(function (x, i) { var s = document.createElement('span'); s.textContent = x[0]; s.style.flex = i ? '1' : '1.2'; s.style.textAlign = i ? 'right' : 'left'; hd.appendChild(s); });
+    box.appendChild(hd);
+    function row(label, a, b, fmt, higherBetter, unit) {
+      var r = document.createElement('div'); r.className = 'srow';
+      var cells = [label, a === null ? '-' : fmt(a), b === null ? '-' : fmt(b)], ch = '-', cls = '';
+      if (a !== null && b !== null) { var d = a - b; ch = d === 0 ? '=' : (d > 0 ? '▲ +' : '▼ −') + fmt(Math.abs(d)).replace(/^[+-]/, ''); var good = higherBetter ? d > 0 : d < 0; cls = d === 0 ? '' : good ? 'var(--profit)' : 'var(--loss)'; }
+      cells.push(ch);
+      cells.forEach(function (t, i) { var s = document.createElement('span'); s.textContent = t; s.style.flex = i ? '1' : '1.2'; s.style.textAlign = i ? 'right' : 'left'; if (i === 3 && cls) s.style.color = cls; r.appendChild(s); });
+      box.appendChild(r);
+    }
+    row('Net P&L', A.net, B.net, function (v) { return signed(r2(v)); }, true);
+    row('Trades', A.n, B.n, function (v) { return String(v); }, true);
+    row('Win rate', A.wr, B.wr, function (v) { return Math.round(v) + '%'; }, true);
+    row('Per trade', A.exp, B.exp, function (v) { return signed(r2(v)); }, true);
+    row('Mistakes', A.mist, B.mist, function (v) { return String(v); }, false);
+    row('Full checklist', A.chk, B.chk, function (v) { return Math.round(v) + '%'; }, true);
+    var verdict = document.createElement('div'); verdict.className = 'tmeta'; verdict.style.marginTop = '8px';
+    if (A.n && B.n) { var better = (A.net > B.net) + (A.wr > B.wr) + (A.mist < B.mist) + ((A.exp || 0) > (B.exp || 0)); verdict.textContent = better >= 3 ? 'You are improving versus ' + R.names[1] + '.' : better <= 1 ? 'Weaker than ' + R.names[1] + '. Review your mistakes.' : 'Mixed results versus ' + R.names[1] + '.'; box.appendChild(verdict); }
+  }
+  $('cmpmode').addEventListener('click', function (e) { var m = e.target.getAttribute && e.target.getAttribute('data-m'); if (!m) return; cmpMode = m; try { localStorage.setItem('ct-cmp', m); } catch (x) {} renderCompare(); });
+
+  /* ---- Underwater (drawdown) chart ---- */
+  function renderUnderwater() {
+    var box = $('uwchart'); box.textContent = '';
+    var tr = state.trades; if (tr.length < 3) { box.className = 'tmeta'; box.textContent = 'Add at least 3 trades to see the drawdown chart.'; $('uwsub').textContent = ''; return; }
+    box.className = '';
+    var eq = state.start, peak = eq, pts = [0], worst = 0, i;
+    tr.forEach(function (t) { eq += t.pl; if (eq > peak) peak = eq; var dd = peak > 0 ? (eq - peak) / peak * 100 : 0; pts.push(dd); if (dd < worst) worst = dd; });
+    var NS = 'http://www.w3.org/2000/svg', W = 340, H = 130, pl = 34, pr = 6, pt = 8, pb = 14, lo = Math.min(worst, -1) * 1.1;
+    var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', '100%'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Drawdown chart, max ' + worst.toFixed(1) + ' percent');
+    function X(k) { return pl + (W - pl - pr) * (pts.length === 1 ? 0 : k / (pts.length - 1)); }
+    function Y(v) { return pt + (H - pt - pb) * (v / lo); }
+    function mk(tag, at) { var e = document.createElementNS(NS, tag); Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); }); svg.appendChild(e); return e; }
+    mk('line', { x1: pl, y1: Y(0), x2: W - pr, y2: Y(0), stroke: 'var(--ink-2)', 'stroke-width': 1 });
+    mk('line', { x1: pl, y1: Y(lo / 2), x2: W - pr, y2: Y(lo / 2), stroke: 'var(--grid)', 'stroke-width': 1 });
+    var t1 = mk('text', { x: pl - 4, y: Y(0) + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--ink-2)' }); t1.textContent = '0%';
+    var t2 = mk('text', { x: pl - 4, y: Y(lo) + 2, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--ink-2)' }); t2.textContent = lo.toFixed(0) + '%';
+    var d = 'M' + X(0) + ' ' + Y(0); pts.forEach(function (v, k) { d += ' L' + X(k).toFixed(1) + ' ' + Y(v).toFixed(1); }); var line = d; d += ' L' + X(pts.length - 1) + ' ' + Y(0) + ' Z';
+    mk('path', { d: d, fill: 'var(--loss)', 'fill-opacity': 0.28 }); mk('path', { d: line, fill: 'none', stroke: 'var(--loss)', 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    var wi = pts.indexOf(worst); if (worst < 0) mk('circle', { cx: X(wi), cy: Y(worst), r: 4, fill: 'var(--loss)', stroke: '#fff', 'stroke-width': 1 });
+    box.appendChild(svg);
+    var cur = pts[pts.length - 1];
+    $('uwsub').textContent = 'Worst ' + worst.toFixed(1) + '% · now ' + (cur === 0 ? 'at a new high' : cur.toFixed(1) + ' % below peak') + '. Closer to 0% is better.';
+  }
+  var _p2 = window.__pro2; window.__pro2 = function () { _p2(); renderCompare(); renderUnderwater(); };
+  window.__pro2();
+
+  /* ---- helpers ---- */
+  function holdMin(x) {
+    if (!x.tm || !x.t || !/^\d\d:\d\d$/.test(x.xt || '')) return null;
+    var d = new Date(x.t), p = x.xt.split(':'), e = new Date(x.t); e.setHours(+p[0], +p[1], 0, 0);
+    if (e.getTime() <= d.getTime()) e.setDate(e.getDate() + 1);
+    var m = (e.getTime() - d.getTime()) / 60000; return m > 0 && m <= 1440 ? m : null;
+  }
+  function fmtMin(m) { m = Math.round(m); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm'; }
+  function mkSvg(w, h, label) { var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 ' + w + ' ' + h); s.setAttribute('width', '100%'); s.setAttribute('role', 'img'); s.setAttribute('aria-label', label); return s; }
+  function svgEl(svg, tag, at) { var e = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.keys(at).forEach(function (k) { e.setAttribute(k, at[k]); }); svg.appendChild(e); return e; }
+
+  /* ---- 1. R-multiple view ---- */
+  function renderRView() {
+    var box = $('rview'); box.textContent = '';
+    var rs = []; state.trades.forEach(function (t) { var r = rOf(t); if (r !== null) rs.push(r); });
+    if (rs.length < 5) { box.className = 'tmeta'; box.textContent = 'Add a stop loss to your trades. Need 5 trades with SL, you have ' + rs.length + '.'; return; }
+    box.className = '';
+    var tot = rs.reduce(function (a, b) { return a + b; }, 0), avg = tot / rs.length, wins = rs.filter(function (r) { return r > 0; }).length;
+    srow(box, 'Total R', fmtR(r2(tot)) + ' over ' + rs.length + ' trades');
+    srow(box, 'Expectancy', fmtR(r2(avg)) + ' per trade · win rate ' + Math.round(wins / rs.length * 100) + '%');
+    // histogram
+    var bins = {}, lab = ['≤-2R', '-1R', '0R', '+1R', '+2R', '+3R', '≥+4R'], i, mx = 1;
+    for (i = 0; i < 7; i++) bins[i] = 0;
+    rs.forEach(function (r) { var k = Math.max(-2, Math.min(4, Math.round(r))) + 2; bins[k]++; if (bins[k] > mx) mx = bins[k]; });
+    var W = 340, H = 120, svg = mkSvg(W, H, 'R multiple histogram'), bw = 38;
+    for (i = 0; i < 7; i++) {
+      var x = 10 + i * 46, hh = (H - 34) * bins[i] / mx;
+      svgEl(svg, 'rect', { x: x, y: H - 20 - hh, width: bw, height: Math.max(hh, bins[i] ? 2 : 0), rx: 3, fill: i < 2 ? 'var(--loss)' : i === 2 ? 'var(--ink-2)' : 'var(--profit)' });
+      var tn = svgEl(svg, 'text', { x: x + bw / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--ink-2)' }); tn.textContent = lab[i];
+      if (bins[i]) { var tv = svgEl(svg, 'text', { x: x + bw / 2, y: H - 24 - hh, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--ink)' }); tv.textContent = bins[i]; }
+    }
+    var wrap = document.createElement('div'); wrap.style.marginTop = '8px'; wrap.appendChild(svg); box.appendChild(wrap);
+    // R equity curve
+    var cum = [0], c = 0; rs.forEach(function (r) { c += r; cum.push(c); });
+    var lo = Math.min.apply(null, cum), hi = Math.max.apply(null, cum), rg = (hi - lo) || 1, s2 = mkSvg(340, 90, 'Equity curve in R'), d = '';
+    cum.forEach(function (v, k) { var px = 6 + 328 * k / (cum.length - 1), py = 8 + 74 * (1 - (v - lo) / rg); d += (k ? ' L' : 'M') + px.toFixed(1) + ' ' + py.toFixed(1); });
+    svgEl(s2, 'path', { d: d, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.5, 'stroke-linejoin': 'round' });
+    var w2 = document.createElement('div'); w2.style.marginTop = '10px'; var cap = document.createElement('div'); cap.className = 'tmeta'; cap.textContent = 'Equity curve in R (size does not matter)'; w2.appendChild(cap); w2.appendChild(s2); box.appendChild(w2);
+  }
+
+  /* ---- 2. MAE / MFE ---- */
+  function renderMae() {
+    var box = $('maebox'); box.textContent = '';
+    var rows = [];
+    state.trades.forEach(function (t) {
+      if (t.entry === undefined || t.sl === undefined || t.lo === undefined || t.hi === undefined) return;
+      var risk = Math.abs(t.entry - t.sl); if (!(risk > 0)) return;
+      var buy = t.dir !== 'Sell', mae = buy ? t.entry - Math.min(t.lo, t.hi) : Math.max(t.lo, t.hi) - t.entry, mfe = buy ? Math.max(t.lo, t.hi) - t.entry : t.entry - Math.min(t.lo, t.hi), r = rOf(t);
+      rows.push({ mae: Math.max(0, mae) / risk, mfe: Math.max(0, mfe) / risk, r: r, win: t.pl > 0 });
+    });
+    if (rows.length < 5) { box.className = 'tmeta'; box.textContent = 'Fill "Worst price" and "Best price" (and SL) on trades. Need 5, you have ' + rows.length + '.'; return; }
+    box.className = '';
+    function avg(a, f) { return a.length ? a.reduce(function (s, x) { return s + f(x); }, 0) / a.length : null; }
+    var W = rows.filter(function (x) { return x.win; }), L = rows.filter(function (x) { return !x.win; });
+    var maeW = avg(W, function (x) { return x.mae; }), mfeL = avg(L, function (x) { return x.mfe; }), mfeW = avg(W, function (x) { return x.mfe; }), capW = avg(W.filter(function (x) { return x.r !== null && x.mfe > 0; }), function (x) { return Math.min(1.5, x.r / x.mfe); });
+    if (maeW !== null) srow(box, 'Winners: avg drawdown before win', maeW.toFixed(2) + 'R');
+    if (mfeL !== null) srow(box, 'Losers: avg best move before loss', '+' + mfeL.toFixed(2) + 'R');
+    if (mfeW !== null) srow(box, 'Winners: avg best move', '+' + mfeW.toFixed(2) + 'R');
+    if (capW !== null) srow(box, 'Move you captured on winners', Math.round(capW * 100) + '%');
+    var tips = [];
+    if (maeW !== null && W.length >= 3 && maeW < 0.4) tips.push('Winners rarely go more than ' + maeW.toFixed(2) + 'R against you. Your stop may be too wide.');
+    if (mfeL !== null && L.length >= 3 && mfeL >= 0.8) tips.push('Losers reached +' + mfeL.toFixed(2) + 'R first. Consider taking partial profit or moving to break-even.');
+    if (capW !== null && W.length >= 3 && capW < 0.6) tips.push('You capture only ' + Math.round(capW * 100) + '% of the move on winners. You may exit too early.');
+    if (!tips.length) tips.push('No clear stop or target problem in this sample.');
+    tips.forEach(function (t) { var p = document.createElement('div'); p.className = 'tmeta'; p.style.marginTop = '6px'; p.textContent = '• ' + t; box.appendChild(p); });
+  }
+
+  /* ---- 3. Hold time ---- */
+  function renderHold() {
+    var box = $('holdbox'); box.textContent = '';
+    var W = [], L = [];
+    state.trades.forEach(function (t) { var m = holdMin(t); if (m === null) return; if (t.pl > 0) W.push(m); else if (t.pl < 0) L.push(m); });
+    if (W.length + L.length < 5) { box.className = 'tmeta'; box.textContent = 'Fill Time and "Exit time" on trades. Need 5, you have ' + (W.length + L.length) + '.'; return; }
+    box.className = '';
+    function av(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : null; }
+    var aw = av(W), al = av(L);
+    srow(box, 'Winners held (avg)', aw === null ? '-' : fmtMin(aw) + ' · ' + W.length + ' trades');
+    srow(box, 'Losers held (avg)', al === null ? '-' : fmtMin(al) + ' · ' + L.length + ' trades');
+    var p = document.createElement('div'); p.className = 'tmeta'; p.style.marginTop = '6px';
+    if (aw !== null && al !== null && W.length >= 3 && L.length >= 3) p.textContent = aw < al * 0.8 ? 'You cut winners faster than you hold losers. Let winners run.' : al < aw * 0.8 ? 'You cut losers quickly and let winners run. Good habit.' : 'Winners and losers are held for similar time.';
+    else p.textContent = 'Need at least 3 winners and 3 losers for a verdict.';
+    box.appendChild(p);
+  }
+
+  /* ---- 4. Daily bias ---- */
+  function biasGet() { try { var o = JSON.parse(localStorage.getItem('ct-bias') || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+  function biasSet(o) { try { localStorage.setItem('ct-bias', JSON.stringify(o)); } catch (e) {} }
+  function renderBias() {
+    var o = biasGet(), tk = dayKey(Date.now()), cur = o[tk] && o[tk].b, bb = $('biasbtns'); bb.textContent = '';
+    ['Bullish', 'Bearish', 'Neutral'].forEach(function (b) {
+      var x = document.createElement('button'); x.type = 'button'; x.textContent = b; x.className = cur === b ? 'on' : '';
+      x.onclick = function () { var s = biasGet(); s[tk] = { b: b, r: s[tk] && s[tk].r }; biasSet(s); renderBias(); };
+      bb.appendChild(x);
+    });
+    var list = $('biaslist'); list.textContent = '';
+    var keys = Object.keys(o).sort(function (a, b) { return a < b ? 1 : -1; });
+    var days = []; var d = new Date();
+    for (var i = 0; i < 7; i++) { var k = dayKey(d.getTime()); if (o[k]) days.push([k, d.toLocaleDateString([], { weekday: 'short', day: 'numeric' })]); d.setDate(d.getDate() - 1); }
+    days.forEach(function (it) {
+      var e = o[it[0]], row = document.createElement('div'); row.className = 'rule';
+      var s = document.createElement('span'); s.textContent = it[1] + ': ' + e.b; row.appendChild(s);
+      [['Right', 1], ['Wrong', 0]].forEach(function (rw) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = rw[0]; b.className = 'b-ghost' + (e.r === rw[1] ? (rw[1] ? ' kept' : ' broke') : '');
+        b.onclick = function () { var s2 = biasGet(); s2[it[0]].r = (s2[it[0]].r === rw[1]) ? undefined : rw[1]; biasSet(s2); renderBias(); };
+        row.appendChild(b);
+      });
+      list.appendChild(row);
+    });
+    var right = 0, tot = 0; keys.forEach(function (k) { if (o[k].r === 1) { right++; tot++; } else if (o[k].r === 0) tot++; });
+    var cWith = 0, cAg = 0, nW = 0, nA = 0;
+    state.trades.forEach(function (t) { if (!t.t || !t.dir) return; var e = o[dayKey(t.t)]; if (!e || e.b === 'Neutral') return; var ag = (e.b === 'Bullish' && t.dir === 'Sell') || (e.b === 'Bearish' && t.dir === 'Buy'); if (ag) { cAg += t.pl; nA++; } else { cWith += t.pl; nW++; } });
+    var msg = tot ? 'Bias accuracy: ' + Math.round(right / tot * 100) + '% (' + right + ' of ' + tot + ' days).' : 'Set your bias each morning, then mark Right or Wrong at day end.';
+    if (nA + nW) msg += ' With bias: ' + nW + ' trades ' + signed(r2(cWith)) + '. Against bias: ' + nA + ' trades ' + signed(r2(cAg)) + '.';
+    $('biassub').textContent = msg;
+  }
+
+  /* ---- 5. Lot ladder ---- */
+  function ldGet() { try { var o = JSON.parse(localStorage.getItem('ct-ladder') || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+  function renderLadder() {
+    var o = ldGet(), base = parseFloat(o.base) || 0, g = parseFloat(o.g) || 0, st = parseFloat(o.st) || 0, cut = parseFloat(o.cut) || 0, f = parseFloat(o.f) || 0.5;
+    var out = $('ld-out'), why = $('ld-why');
+    if (!(base > 0) || !(g > 0) || !(st > 0)) { out.textContent = '-'; why.textContent = 'Fill base lot, growth % and lot step.'; return; }
+    var bals = balances(), bal = bals[bals.length - 1], peak = Math.max.apply(null, bals), steps = Math.max(0, Math.floor(((bal / state.start) - 1) * 100 / g)), lot = base + steps * st, notes = ['base ' + base.toFixed(2) + (steps ? ' + ' + steps + ' step' + (steps > 1 ? 's' : '') + ' for growth' : '')];
+    var dd = peak > 0 ? (peak - bal) / peak * 100 : 0;
+    if (cut > 0 && dd >= cut) { lot *= f; notes.push('cut ×' + f + ' (drawdown ' + dd.toFixed(1) + '%)'); }
+    lot = Math.max(0.01, Math.floor(lot * 100 + 1e-9) / 100);
+    out.textContent = lot.toFixed(2) + ' lot'; why.textContent = notes.join(', ') + '. Balance ' + money(bal) + '.';
+  }
+  ['base', 'g', 'st', 'cut', 'f'].forEach(function (k) {
+    var el = $('ld-' + k); var o = ldGet(); if (o[k]) el.value = o[k];
+    el.addEventListener('input', function () { var s = ldGet(); s[k] = el.value; try { localStorage.setItem('ct-ladder', JSON.stringify(s)); } catch (e) {} renderLadder(); });
+  });
+
+  /* ---- 6. Pay yourself ---- */
+  function renderPay() {
+    var pct = 30; try { var v = parseFloat(localStorage.getItem('ct-payp')); if (v >= 0 && v <= 100) pct = v; } catch (e) {}
+    if (document.activeElement !== $('pay-p')) $('pay-p').value = pct;
+    var ms = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    var prof = state.trades.reduce(function (s, t) { return s + (t.t && t.t >= ms ? t.pl : 0); }, 0), wd = 0;
+    (state.cash || []).forEach(function (c) { if (c.t >= ms && c.amt < 0) wd += -c.amt; });
+    var sug = Math.max(0, prof) * pct / 100, left = Math.max(0, sug - wd), box = $('pay-out'); box.textContent = '';
+    srow(box, 'Profit this month', signed(r2(prof)));
+    srow(box, 'Pay yourself (' + pct + '%)', money(r2(sug)));
+    srow(box, 'Already withdrawn', money(r2(wd)));
+    srow(box, 'Still to withdraw', money(r2(left)));
+    srow(box, 'Keep in account', money(r2(Math.max(0, prof) - sug)) + ' of profit');
+  }
+  $('pay-p').addEventListener('input', function () { var v = parseFloat($('pay-p').value); if (v >= 0 && v <= 100) { try { localStorage.setItem('ct-payp', String(v)); } catch (e) {} renderPay(); } });
+
+  var _p3 = window.__pro2; window.__pro2 = function () { _p3(); renderRView(); renderMae(); renderHold(); renderBias(); renderLadder(); renderPay(); };
+  window.__pro2();
   /* Diwali crackers */
   var dw = { ctx: null, snd: true, raf: 0, last: 0, parts: [], on: false, w: 0, h: 0, next: 0 };
   try { dw.snd = localStorage.getItem('ct-dwsnd') !== '0'; } catch (e) {}
